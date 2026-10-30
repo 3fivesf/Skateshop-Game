@@ -129,11 +129,16 @@ canvas{display:block;width:100%;height:100%;image-rendering:pixelated;image-rend
 .dpad .r{right:0;border-left:none}
 .dpad i{position:absolute;left:37px;top:37px;width:37px;height:37px;background:#2c313b;border:0}
 .dpad[data-dir="up"] .u,.dpad[data-dir="down"] .d,.dpad[data-dir="left"] .l,.dpad[data-dir="right"] .r{background:var(--accent)}
+.stick{position:relative;width:118px;height:118px;border-radius:50%;background:#20242c;border:3px solid #0b0c0f;box-shadow:inset 0 0 0 5px #2c313b;touch-action:none;flex:none}
+.stick .ring{position:absolute;inset:22px;border-radius:50%;border:2px dashed #3a404c;pointer-events:none}
+.knob{position:absolute;left:50%;top:50%;width:54px;height:54px;margin:-27px 0 0 -27px;border-radius:50%;background:#3a404c;border:3px solid #0b0c0f;box-shadow:inset 0 -5px 0 rgba(0,0,0,.35),inset 0 3px 0 rgba(255,255,255,.08);transition:transform .12s ease-out;pointer-events:none}
+.stick.active .knob{background:var(--accent);transition:none}
 .ab{display:flex;gap:16px;align-items:center;transform:rotate(-14deg)}
 .btn{all:unset;width:54px;height:54px;border-radius:50%;display:grid;place-items:center;font-family:var(--pix);font-size:15px;border:3px solid #0b0c0f;box-shadow:inset 0 -5px 0 rgba(0,0,0,.35);touch-action:none;cursor:pointer}
 .btn.a{background:var(--bad);color:var(--ink);margin-top:-20px}
 .btn.b{background:#3a404c;color:var(--ink);margin-top:20px}
 .btn:active,.btn.on{filter:brightness(1.25)}
+.breakmode .hud,.breakmode .tray{display:none!important}
 .keys{margin:0;color:var(--dim);font-size:12px;text-align:center}
 @media (hover:hover) and (pointer:fine){ .pad{display:none} }
 @media (hover:none),(pointer:coarse){ .keys{display:none} }
@@ -175,7 +180,7 @@ canvas{display:block;width:100%;height:100%;image-rendering:pixelated;image-rend
   </div>
 
   <div class="pad" id="pad">
-    <div class="dpad" id="dpad" aria-label="Direction pad"><span class="u"></span><span class="d"></span><span class="l"></span><span class="r"></span><i></i></div>
+    <div class="stick" id="stick" aria-label="Movement stick"><span class="ring"></span><div class="knob" id="knob"></div></div>
     <div class="ab"><button class="btn b" id="bB" aria-label="B button">B</button><button class="btn a" id="bA" aria-label="A button">A</button></div>
   </div>
   <p class="keys">Arrows or WASD to move · Space / E = A · X / Esc = B · M = menu</p>
@@ -898,7 +903,8 @@ function land(p){
   toast(`${name} +${got}${sk.combo>1?` (x${sk.combo})`:''} · Skate ${sk.score}`,'good');blip(330,.06,'triangle',.05);
 }
 function updatePlayer(dt){
-  const p=G.player;let dx=hold.right-hold.left,dy=hold.down-hold.up;
+  const p=G.player;let dx=hold.right-hold.left,dy=hold.down-hold.up,sm=1;
+  if(stick.on){const m=Math.hypot(stick.x,stick.y);if(m>.2){dx=stick.x;dy=stick.y;sm=m>.85?1:Math.max(.45,m);}else{dx=0;dy=0;}}
   const onSkate=G.map==='stock'&&SKATE.has(tileUnder(p));
   if(G.sk&&G.sk.comboT>0)G.sk.comboT-=dt;
   if(onSkate||p.air>0){
@@ -921,7 +927,7 @@ function updatePlayer(dt){
   p.moving=!!(dx||dy);
   if(p.moving){
     if(hold[lastDir])p.dir=lastDir;else p.dir=dx?(dx>0?'right':'left'):(dy>0?'down':'up');
-    const len=Math.hypot(dx,dy),sp=62*dt;dx=dx/len*sp;dy=dy/len*sp;
+    const len=Math.hypot(dx,dy),sp=62*dt*sm;dx=dx/len*sp;dy=dy/len*sp;
     if(!blocked(p.x+dx,p.y))p.x+=dx;
     if(!blocked(p.x,p.y+dy))p.y+=dy;
     p.ft+=dt;if(p.ft>.14){p.ft=0;p.frame++;}
@@ -1138,13 +1144,25 @@ addEventListener('keydown',e=>{
 });
 addEventListener('keyup',e=>{const k=KEYMAP[e.code];if(k in hold)hold[k]=0;});
 addEventListener('blur',()=>{for(const k in hold)hold[k]=0;});
-const dpad=$('dpad');let padDir=null;
-function setPadDir(d){if(d===padDir)return;['up','down','left','right'].forEach(k=>hold[k]=0);padDir=d;dpad.dataset.dir=d||'';if(d){hold[d]=1;lastDir=d;press(d);}}
-function padFrom(e){const b=dpad.getBoundingClientRect(),dx=e.clientX-(b.left+b.width/2),dy=e.clientY-(b.top+b.height/2);
-  if(Math.hypot(dx,dy)<12){setPadDir(null);return;}setPadDir(Math.abs(dx)>Math.abs(dy)?(dx>0?'right':'left'):(dy>0?'down':'up'));}
-dpad.addEventListener('pointerdown',e=>{e.preventDefault();try{dpad.setPointerCapture(e.pointerId);}catch(_){}padFrom(e);});
-dpad.addEventListener('pointermove',e=>{if(padDir!==null||e.buttons)padFrom(e);});
-['pointerup','pointercancel','lostpointercapture'].forEach(t=>dpad.addEventListener(t,()=>setPadDir(null)));
+const stickEl=$('stick'),knobEl=$('knob'),stick={x:0,y:0,on:false};let stickDir=null,stickId=null;
+function setStick(nx,ny){
+  stick.x=nx;stick.y=ny;
+  hold.left=nx<-.35?1:0;hold.right=nx>.35?1:0;hold.up=ny<-.35?1:0;hold.down=ny>.35?1:0;
+  const m=Math.hypot(nx,ny),d=m>.4?(Math.abs(nx)>Math.abs(ny)?(nx>0?'right':'left'):(ny>0?'down':'up')):null;
+  if(d!==stickDir){stickDir=d;if(d){lastDir=d;press(d);}}
+  knobEl.style.transform=`translate(${nx*34}px,${ny*34}px)`;
+}
+function stickFrom(e){
+  const b=stickEl.getBoundingClientRect(),R2=b.width*.36;
+  let nx=(e.clientX-(b.left+b.width/2))/R2,ny=(e.clientY-(b.top+b.height/2))/R2;
+  const m=Math.hypot(nx,ny);if(m>1){nx/=m;ny/=m;}
+  setStick(nx,ny);
+}
+function stickEnd(){stick.on=false;stickId=null;stickEl.classList.remove('active');setStick(0,0);}
+stickEl.addEventListener('pointerdown',e=>{e.preventDefault();stickId=e.pointerId;try{stickEl.setPointerCapture(e.pointerId);}catch(_){}stick.on=true;stickEl.classList.add('active');stickFrom(e);});
+stickEl.addEventListener('pointermove',e=>{if(stick.on&&e.pointerId===stickId)stickFrom(e);});
+['pointerup','pointercancel','lostpointercapture'].forEach(t=>stickEl.addEventListener(t,e=>{if(e.pointerId===stickId)stickEnd();}));
+addEventListener('blur',()=>{if(stick.on)stickEnd();});
 [['bA','A'],['bB','B']].forEach(([id,k])=>{const b=$(id);
   b.addEventListener('pointerdown',e=>{e.preventDefault();b.classList.add('on');press(k);});
   ['pointerup','pointercancel','pointerleave'].forEach(t=>b.addEventListener(t,()=>b.classList.remove('on')));
@@ -1154,6 +1172,7 @@ document.addEventListener('dblclick',e=>e.preventDefault());
 function handlePresses(){
   while(presses.length){
     const k=presses.shift();
+    if(ui==='break'){breakPress(k);continue;}
     if(k==='MENU'){openMenu();continue;}
     if(ui==='dialog'){if(k==='A'||k==='B')advanceDialog();}
     else if(ui==='picker'){
@@ -1338,6 +1357,144 @@ function drawCarry(){
     if(lab){const w=pWidth(lab);R(ctx,x+12,y+3,w+3,7,'#0b0c0f');pText(lab,x+13,y+4,'#f1ede4');}
   }
 }
+/* ---------- bonus level: break run to the corner store ---------- */
+const BR={},GROUND=150,PX=52;
+function startBreak(){
+  ensureAudio();
+  const rnd=mulberry(Math.floor(Math.random()*1e6));
+  const obs=[],END=4200;let x=240;
+  const pool=[['cone',3],['bag',2],['hydrant',2],['crack',2],['sign',2],['ped',2],['dog',1],['ledge',3],['rail',3],['bench',2]];
+  const tot=pool.reduce((a,b)=>a+b[1],0);
+  while(x<END-260){
+    let r=rnd()*tot,t='cone';for(const [k,w] of pool){if((r-=w)<0){t=k;break;}}
+    const o={t,x};
+    ({cone:()=>{o.w=6;o.h=8;},bag:()=>{o.w=10;o.h=7;},hydrant:()=>{o.w=6;o.h=11;},crack:()=>{o.w=16;o.h=0;},sign:()=>{o.w=9;o.h=13;},
+      ped:()=>{o.w=8;o.h=17;o.vx=-14;o.look={skin:pick(SKIN,rnd),hair:pick(HAIR,rnd),shirt:pick(SHIRTS,rnd)[0],pants:pick(PANTS,rnd),cap:rnd()<.4?pick(CAPS,rnd):null};},
+      dog:()=>{o.w=10;o.h=7;o.vx=-22;},
+      ledge:()=>{o.w=48+Math.floor(rnd()*40);o.h=9;o.grind=true;},rail:()=>{o.w=56+Math.floor(rnd()*40);o.h=14;o.grind=true;},bench:()=>{o.w=34;o.h=10;o.grind=true;}})[t]();
+    obs.push(o);
+    if(rnd()<.45)obs.push({t:'sticker',x:o.x+Math.floor(o.w/2)-3,w:6,h:0,y:o.h+15+Math.floor(rnd()*8),got:false});
+    x+=o.w+70+Math.floor(rnd()*90);
+  }
+  Object.assign(BR,{x:0,v:80,h:0,vh:0,grind:null,trick:null,trickT:0,combo:0,ground:0,score:0,hearts:3,bail:0,inv:0,obs,END,done:false,seed:Math.floor(rnd()*1e6),grindT:0,stickers:0});
+  for(const k in hold)hold[k]=0;
+  ui='break';overlay.hidden=true;box.hidden=true;hintEl.textContent='';document.body.classList.add('breakmode');fit();
+  toast('Break time! Right = push, left = slow down. A = ollie. A or B in the air = tricks. Land on ledges, rails and benches to grind.');
+}
+function breakPress(k){
+  const B=BR;if(B.done||B.bail>0)return;
+  if(k==='A'){
+    if(B.grind){awardGrind();B.grind=null;B.vh=175;B.h+=.1;blip(520,.08,'square',.04,240);}
+    else if(B.h<=0){B.vh=175;B.h=.1;blip(520,.08,'square',.04,240);}
+    else if(!B.trick)doTrick('Kickflip',30);
+  }else if(k==='B'){if(B.h>0&&!B.grind&&!B.trick)doTrick('Shove-it',20);}
+}
+function doTrick(name,pts){const B=BR;B.trick=name;B.trickT=.28;B.combo++;const g=pts*B.combo;B.score+=g;toast(`${name} +${g}${B.combo>1?` (x${B.combo})`:''}`,'good');blip(660,.06,'triangle',.05,200);}
+function awardGrind(){const B=BR,g=Math.max(5,Math.round(B.grindT*70))*Math.max(1,B.combo);B.score+=g;toast(`Grind +${g}${B.combo>1?` (x${B.combo})`:''}`,'good');}
+function bailOut(){
+  const B=BR;B.bail=.9;B.hearts--;B.combo=0;B.trick=null;B.trickT=0;B.grind=null;B.h=0;B.vh=0;sfx.bad();
+  toast(pick(['Slammed!','Bailed!','Ate it!','Straight to the pavement.','That one hurt.']),'bad');
+  if(B.hearts<=0)setTimeout(()=>finishBreak(false),700);
+}
+function updateBreak(dt){
+  const B=BR;if(B.done)return;
+  if(B.bail>0){B.bail-=dt;B.v=Math.max(30,B.v-60*dt);if(B.bail<=0)B.inv=1.2;}
+  else{const tgt=hold.right?118:hold.left?48:80;B.v+=(tgt-B.v)*Math.min(1,dt*1.5);}
+  if(B.inv>0)B.inv-=dt;
+  B.x+=B.v*dt;
+  for(const o of B.obs)if(o.vx)o.x+=o.vx*dt;
+  if(B.trickT>0){B.trickT-=dt;if(B.trickT<=0)B.trick=null;}
+  if(B.grind){const o=B.grind;B.grindT+=dt;B.h=o.h;if(B.x>o.x+o.w+2){awardGrind();B.grind=null;B.vh=0;}}
+  else if(B.h>0||B.vh>0){
+    const prev=B.h;B.vh-=520*dt;B.h+=B.vh*dt;
+    if(B.vh<0&&B.bail<=0)for(const o of B.obs){
+      if(!o.grind||B.x+3<o.x||B.x-3>o.x+o.w)continue;
+      if(B.h<=o.h+1&&prev>=o.h-3){if(B.trickT>0){bailOut();break;}
+        B.grind=o;B.h=o.h;B.vh=0;B.combo++;B.grindT=0;toast(o.t==='rail'?'Boardslide!':o.t==='bench'?'Bench grind!':'50-50 on the ledge!','good');blip(330,.25,'sawtooth',.02);break;}
+    }
+    if(!B.grind&&B.h<=0){B.h=0;B.vh=0;if(B.trickT>0&&B.bail<=0)bailOut();}
+  }
+  if(B.h<=0&&!B.grind){B.ground+=dt;if(B.ground>.35)B.combo=0;}else B.ground=0;
+  if(B.bail<=0&&B.inv<=0){
+    for(const o of B.obs){
+      if(o.t==='sticker'){if(!o.got&&Math.abs(o.x+3-B.x)<7&&Math.abs(o.y-(B.h+9))<9){o.got=true;B.stickers++;B.score+=15;blip(1200,.06,'square',.03);}continue;}
+      if(B.x+3<o.x||B.x-3>o.x+o.w)continue;
+      if(o.t==='crack'){if(B.h<1){bailOut();break;}continue;}
+      if(o.grind){if(B.grind!==o&&B.h<o.h-3){bailOut();break;}continue;}
+      if(B.h<o.h-1){bailOut();break;}
+    }
+  }
+  if(B.x>=B.END)finishBreak(true);
+}
+function heart(x,y,full){const c=full?'#ec5b52':'#3a404c';R(ctx,x+1,y,2,1,c);R(ctx,x+4,y,2,1,c);R(ctx,x,y+1,7,2,c);R(ctx,x+1,y+3,5,1,c);R(ctx,x+2,y+4,3,1,c);R(ctx,x+3,y+5,1,1,c);}
+function renderBreak(){
+  const B=BR,cam=B.x-PX,mod=(a,m)=>((a%m)+m)%m;
+  ['#7fc8e8','#94d2ec','#a9dcef','#c0e5f1','#f2d6a8'].forEach((c,i)=>R(ctx,0,i*14,W,14,c));
+  for(let i=-1;i<7;i++){const hx=Math.floor(i*40-mod(cam*.15,40));R(ctx,hx,58,40,16,'#8fb3a0');R(ctx,hx+8,52,22,8,'#8fb3a0');}
+  R(ctx,0,70,W,4,'#7aa08c');
+  const bw=44,off=cam*.5,first=Math.floor(off/bw)-1;
+  for(let i=first;i<first+7;i++){
+    const r=mulberry(i*977+B.seed),x=Math.round(i*bw-off),h=44+Math.floor(r()*30),top=128-h;
+    R(ctx,x,top,bw-2,h+12,pick(['#d9b48f','#c98b6b','#e8dcc4','#9fb6c9','#b5a3c7','#d6c27a','#a8c3a0'],r));R(ctx,x,top,bw-2,3,'rgba(0,0,0,.18)');
+    for(let wy=top+8;wy<116;wy+=12)for(let wx=x+5;wx<x+bw-8;wx+=10)R(ctx,wx,wy,6,7,r()<.3?'#f6e7a8':'#4d5f73');
+    const aw=pick(['#d6453d','#2f6b4f','#3f7fd6','#26282e','#e46aa6'],r);for(let k=0;k<bw-2;k+=4)R(ctx,x+k,118,4,5,(k/4)%2?aw:'#f4f1ea');
+    R(ctx,x+4,123,bw-10,17,'#2a2d33');R(ctx,x+6,125,bw-14,13,'#5f97b5');R(ctx,x+8,127,4,1,'#9cc8de');
+  }
+  // the shop you left, and the corner store at the end
+  const ax=Math.round(-90-cam);if(ax>-80){R(ctx,ax,70,80,70,'#f1efe9');R(ctx,ax,70,80,4,'#cfcac0');R(ctx,ax+6,96,50,40,'#5f97b5');R(ctx,ax+60,100,14,40,'#2a2d33');R(ctx,ax+6,80,50,10,'#1d1f24');R(ctx,ax+10,83,42,4,'#00aeef');}
+  const sx0=Math.round(B.END+20-cam);if(sx0<W){R(ctx,sx0,66,96,74,'#e8dcc4');R(ctx,sx0,66,96,3,'#cfcac0');R(ctx,sx0,74,96,16,'#2f6b4f');
+    for(let k=0;k<5;k++){R(ctx,sx0+8+k*18,77,3,10,'#f2c14e');R(ctx,sx0+7+k*18,80,5,7,'#f2c14e');}
+    R(ctx,sx0+6,96,40,30,'#5f97b5');R(ctx,sx0+10,100,10,14,'#d6453d');R(ctx,sx0+24,102,14,10,'#f2c14e');R(ctx,sx0+56,98,18,42,'#2a2d33');R(ctx,sx0+70,118,2,4,'#c4c9d1');
+    R(ctx,sx0+80,110,14,30,'#c4c9d1');R(ctx,sx0+81,112,12,8,'#3f7fd6');}
+  R(ctx,0,140,W,16,'#bdb9b0');for(let sx=-mod(cam,16);sx<W;sx+=16)R(ctx,Math.round(sx),140,1,16,'#a9a59d');
+  for(let sx=-mod(cam,160);sx<W;sx+=160){const lx=Math.round(sx+70);R(ctx,lx,92,2,48,'#4a4f5a');R(ctx,lx-4,90,10,3,'#4a4f5a');R(ctx,lx-3,93,8,1,'#f6e7a8');}
+  R(ctx,0,156,W,3,'#e9e6e0');R(ctx,0,159,W,33,'#3a3d45');for(let sx=-mod(cam,24);sx<W;sx+=24)R(ctx,Math.round(sx),175,12,2,'#f2c14e');
+  const gy=GROUND;
+  for(const o of B.obs){const sx=Math.round(o.x-cam);if(sx<-120||sx>W+20)continue;
+    switch(o.t){
+      case 'cone':R(ctx,sx+1,gy-8,4,7,'#ee8a3a');R(ctx,sx+2,gy-10,2,2,'#ee8a3a');R(ctx,sx+1,gy-5,4,1,'#f4f1ea');R(ctx,sx,gy-1,6,1,'#c0392b');break;
+      case 'bag':R(ctx,sx,gy-6,10,6,'#1d1f24');R(ctx,sx+2,gy-8,6,2,'#1d1f24');R(ctx,sx+4,gy-9,2,1,'#3a3d45');R(ctx,sx+2,gy-5,2,1,'#4a4f5a');break;
+      case 'hydrant':R(ctx,sx+1,gy-10,4,10,'#d6453d');R(ctx,sx,gy-7,6,2,'#d6453d');R(ctx,sx+1,gy-11,4,1,'#f2c14e');break;
+      case 'crack':R(ctx,sx,gy,16,3,'#6b6760');R(ctx,sx+3,gy-1,10,1,'#7a7671');R(ctx,sx+6,gy+3,4,1,'#6b6760');break;
+      case 'sign':R(ctx,sx,gy-13,9,11,'#26282e');R(ctx,sx+1,gy-12,7,9,'#f4f1ea');R(ctx,sx+2,gy-10,5,1,'#d6453d');R(ctx,sx+2,gy-8,4,1,'#26282e');R(ctx,sx+2,gy-6,5,1,'#26282e');R(ctx,sx+1,gy-2,1,2,'#26282e');R(ctx,sx+7,gy-2,1,2,'#26282e');break;
+      case 'ped':drawPerson(ctx,sx+4,gy,o.look,'left',Math.floor(B.x/6),true);break;
+      case 'dog':R(ctx,sx,gy-6,9,4,'#8a5a2b');R(ctx,sx-1,gy-8,3,3,'#8a5a2b');R(ctx,sx+8,gy-7,2,1,'#8a5a2b');R(ctx,sx+1,gy-2,1,2,'#5e3d24');R(ctx,sx+7,gy-2,1,2,'#5e3d24');R(ctx,sx,gy-7,1,1,'#1d1f24');break;
+      case 'ledge':R(ctx,sx,gy-o.h,o.w,o.h,'#a9a59d');R(ctx,sx,gy-o.h,o.w,2,'#d9d5cc');R(ctx,sx,gy-o.h+2,o.w,1,'#c4c9d1');R(ctx,sx,gy-1,o.w,1,'#8b8782');break;
+      case 'rail':R(ctx,sx,gy-o.h,o.w,2,'#c4c9d1');R(ctx,sx,gy-o.h+2,o.w,1,'#8b919c');for(let k=3;k<o.w-3;k+=24)R(ctx,sx+k,gy-o.h+2,2,o.h-2,'#8b919c');R(ctx,sx+o.w-3,gy-o.h+2,2,o.h-2,'#8b919c');break;
+      case 'bench':R(ctx,sx,gy-o.h-7,o.w,2,'#9a6638');R(ctx,sx,gy-o.h,o.w,3,'#b9824d');R(ctx,sx,gy-o.h+3,o.w,1,'#6b4527');R(ctx,sx+2,gy-o.h+3,2,o.h-3,'#26282e');R(ctx,sx+o.w-4,gy-o.h+3,2,o.h-3,'#26282e');break;
+      case 'sticker':if(!o.got){const bob=Math.round(Math.sin((B.x+o.x)/14));R(ctx,sx,gy-o.y+bob,6,6,'#f2c14e');R(ctx,sx+1,gy-o.y+1+bob,4,4,'#e46aa6');R(ctx,sx+2,gy-o.y+2+bob,2,2,'#f4f1ea');}break;
+    }}
+  const bx=PX,by=GROUND-Math.round(B.h);
+  if(B.bail>0){
+    R(ctx,bx-8,GROUND-4,12,4,STAFF.shirt);R(ctx,bx+4,GROUND-5,5,5,STAFF.skin);R(ctx,bx+4,GROUND-6,5,2,STAFF.hair);R(ctx,bx-14,GROUND-3,6,2,STAFF.pants);
+    const t=.9-B.bail;R(ctx,bx+10+Math.round(t*40),GROUND-4-Math.round(Math.sin(t*6)*6),12,2,'#26282e');
+  }else if(!(B.inv>0&&Math.floor(B.inv*12)%2)){
+    R(ctx,bx-6,GROUND,12,2,'rgba(0,0,0,.25)');
+    if(B.trick==='Kickflip'){const ph=Math.floor(B.trickT*24)%3;R(ctx,bx-7,by-2,14,ph===1?1:3,ph===0?'#26282e':'#d6453d');}
+    else if(B.trick==='Shove-it'){const w=Math.floor(B.trickT*24)%2?6:14;R(ctx,bx-Math.floor(w/2),by-2,w,3,'#26282e');R(ctx,bx-Math.floor(w/2)+1,by-2,w-2,1,'#d6453d');}
+    else{R(ctx,bx-7,by-2,14,3,'#26282e');R(ctx,bx-6,by-2,12,1,'#d6453d');R(ctx,bx-5,by+1,2,1,'#f4f1ea');R(ctx,bx+3,by+1,2,1,'#f4f1ea');}
+    if(B.grind)for(let k=0;k<3;k++)R(ctx,bx-8-Math.floor(Math.random()*6),by+Math.floor(Math.random()*2),1,1,pick(['#f2c14e','#ee8a3a','#f4f1ea']));
+    drawPerson(ctx,bx,by-3,STAFF,'right',0,false);
+  }
+  R(ctx,1,1,27,10,'#0b0c0f');for(let i=0;i<3;i++)heart(3+i*8,3,i<B.hearts);
+  const pw=96,px0=48;R(ctx,px0,4,pw,4,'#0b0c0f');R(ctx,px0+1,5,Math.round((pw-2)*Math.min(1,B.x/B.END)),2,'#4fc47f');R(ctx,px0+pw+1,2,6,8,'#2f6b4f');R(ctx,px0+pw+3,3,2,5,'#f2c14e');
+  const sc=String(B.score),w=pWidth(sc);R(ctx,W-w-6,1,w+5,10,'#0b0c0f');pText(sc,W-w-3,3,'#f2c14e');
+  if(B.combo>1){const cs='X'+B.combo,cw=pWidth(cs);R(ctx,W-cw-6,12,cw+5,9,'#0b0c0f');pText(cs,W-cw-3,14,'#4fc47f');}
+}
+function finishBreak(made){
+  const B=BR;if(B.done)return;B.done=true;
+  let best=0;try{best=+localStorage.getItem('atlas-shift-break')||0;if(B.score>best)localStorage.setItem('atlas-shift-break',String(B.score));}catch(_){}
+  const drink=pick(['an iced tea','a Mexican Coke','a tall can of iced tea','an orange soda','a coconut water']),snack=pick(['hot chips','sunflower seeds','a burrito from the warmer','gummy worms','a honey bun']);
+  if(made){sfx.cash();toast('Made it to the corner store!','good');}
+  setTimeout(()=>{
+    overlay.innerHTML=`<h2>${made?'CORNER <span>STORE</span>':'BREAK <span>OVER</span>'}</h2>
+      <p>${made?`You grabbed ${drink} and ${snack}. Time to skate back to work.`:'Too many slams. You limp back to the shop.'}</p>
+      <div class="stats"><span>Score</span><b>${B.score}</b><span>Stickers grabbed</span><b>${B.stickers}</b><span>Hearts left</span><b>${Math.max(0,B.hearts)}</b><span>Best break</span><b>${Math.max(best,B.score)}</b></div>
+      <div class="levels"><button class="go" id="brAgain">SKATE IT AGAIN</button><button class="go alt" id="brBack">BACK TO WORK</button></div>`;
+    overlay.hidden=false;ui='end';document.body.classList.remove('breakmode');fit();
+    $('brAgain').addEventListener('click',startBreak);$('brBack').addEventListener('click',renderTitle);
+  },made?1000:0);
+}
 let last=performance.now();
 function frame(now){
   const dt=Math.min(.05,(now-last)/1000);last=now;
@@ -1345,7 +1502,7 @@ function frame(now){
   if(ui==='dialog'&&dlg){const L=dlg.lines[0];if(dlg.shown<L.text.length){const before=Math.floor(dlg.shown);dlg.shown=Math.min(L.text.length,dlg.shown+dt*55);if(Math.floor(dlg.shown)!==before)renderBox();}}
   if(ui==='play'&&!G.over)update(dt);
   if(toastT>0){toastT-=dt;if(toastT<=0)toastEl.hidden=true;}
-  render();updateHud();
+  if(ui==='break'){updateBreak(dt);renderBreak();}else{render();updateHud();}
   requestAnimationFrame(frame);
 }
 
@@ -1391,9 +1548,11 @@ function renderTitle(){
   const dev=readDev(),un=dev?LEVELS.length:readUnlocked();
   overlay.innerHTML=`<h2>ATLAS <span>SHIFT</span></h2><p>Work the floor at Atlas, 209 2nd Ave. Hit the sales goal, or make it to 7 PM with 3 stars, to unlock the next day.</p>
     <div class="levels">${LEVELS.map(L=>`<button class="lv" data-l="${L.n}"${L.n>un?' disabled':''}><b>DAY ${L.n}</b><span>${L.name}</span><small>${L.n>un?'Locked':`Goal $${L.target} · ${L.goal}`}</small></button>`).join('')}</div>
+    ${dev?'<button class="go alt" id="devBreak">BONUS: BREAK RUN</button>':''}
     <button class="go alt" id="loadTitle">LOAD SAVE</button>
     <button class="sv" id="devBtn" style="font-size:9px;padding:6px 10px">DEV MODE: ${dev?'ON · ALL DAYS OPEN':'OFF'}</button><p id="best"></p>`;
   $('devBtn').addEventListener('click',()=>{writeDev(!dev);renderTitle();});
+  if($('devBreak'))$('devBreak').addEventListener('click',startBreak);
   overlay.querySelectorAll('.lv').forEach(b=>b.addEventListener('click',()=>startShift(+b.dataset.l)));
   $('loadTitle').addEventListener('click',openLoad);
   showBest();ui='title';overlay.hidden=false;
@@ -1441,14 +1600,16 @@ function endShift(reason){
   const goalHit=reason==='goal',passed=goalHit||(avg>=3&&G.served>=3),n=G.level,hasNext=n<LEVELS.length;
   let unlockedNow=false;
   if(passed&&hasNext&&readUnlocked()<n+1){writeUnlocked(n+1);unlockedNow=true;}
-  const verdict=(goalHit?`Sales goal hit at ${fmtClock(G.minute)}. `:passed?'Made it to close. ':'')+(passed?(unlockedNow?`Day ${n+1} unlocked.`:'Day complete.'):`Not quite. Hit $${LV().target}, or close with 3 stars and at least 3 sales.`);
+  const perfect=G.stars.length>0&&avg>=4.95;
+  const verdict=(perfect?'Perfect 5.0! You earned a break. ':'')+(goalHit?`Sales goal hit at ${fmtClock(G.minute)}. `:passed?'Made it to close. ':'')+(passed?(unlockedNow?`Day ${n+1} unlocked.`:'Day complete.'):`Not quite. Hit $${LV().target}, or close with 3 stars and at least 3 sales.`);
   overlay.innerHTML=`<h2>DAY ${n} <span>${passed?'DONE':'OVER'}</span></h2><p>${verdict}</p>
     <div class="stats"><span>Sales</span><b>$${G.sales.toLocaleString()}</b><span>Customers helped</span><b>${G.served}</b><span>Walked out</span><b>${G.walkouts}</b><span>Wrong totals</span><b>${G.wrongTotals}</b>${G.stock?`<span>Restocks</span><b>${G.restocks}</b>`:''}<span>Messes cleaned</span><b>${G.cleaned||0}</b><span>Rating</span><b>${G.stars.length?'★ '+avg.toFixed(1):'—'}</b></div>
-    <div class="levels">${passed&&hasNext?`<button class="go" id="nextDay">START DAY ${n+1}</button>`:''}<button class="go${passed&&hasNext?' alt':''}" id="again">REPLAY DAY ${n}</button><button class="go alt" id="toMenu">ALL DAYS</button></div>`;
+    <div class="levels">${perfect?`<button class="go" id="goBreak">GO ON A BREAK</button>`:''}${passed&&hasNext?`<button class="go${perfect?' alt':''}" id="nextDay">START DAY ${n+1}</button>`:''}<button class="go${passed&&hasNext?' alt':''}" id="again">REPLAY DAY ${n}</button><button class="go alt" id="toMenu">ALL DAYS</button></div>`;
   overlay.hidden=false;
   if($('nextDay'))$('nextDay').addEventListener('click',()=>startShift(n+1));
   $('again').addEventListener('click',()=>startShift(n));
   $('toMenu').addEventListener('click',renderTitle);
+  if($('goBreak'))$('goBreak').addEventListener('click',startBreak);
 }
 function ensureAudio(){if(!ac){try{ac=new (window.AudioContext||window.webkitAudioContext)();}catch(_){ac=null;}}
   if(ac&&ac.state==='suspended')ac.resume();if(ac&&music.on)musicStart();}
