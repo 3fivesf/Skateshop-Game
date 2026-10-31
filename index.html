@@ -150,6 +150,22 @@ canvas{display:block;width:100%;height:100%;image-rendering:pixelated;image-rend
 @media (hover:none),(pointer:coarse){ .keys{display:none} }
 @media (max-width:420px){ h1{font-size:12px} .stock{gap:3px 6px} }
 @media (prefers-reduced-motion:reduce){ .more{animation:none} }
+.msgbar{display:flex;gap:6px;align-items:stretch;height:50px;flex:none}
+.msgbar .toast,.msgbar .callout{position:static;max-width:none;flex:1;min-width:0;overflow:hidden;margin:0;box-shadow:none}
+.msgbar .toast{display:flex;align-items:center;font-size:11.5px;line-height:1.25;background:var(--panel);border:2px solid var(--line);border-left:4px solid var(--accent);padding:3px 8px}
+.msgbar .toast.bad{border-left-color:var(--bad)}
+.msgbar .toast.good{border-left-color:var(--good)}
+.msgbar .callout{font-size:11px;padding:3px 7px;border-width:2px}
+.msgbar .callout::after{display:none}
+.msgbar .callout:not([hidden])~.toast{display:none}
+.msgbar .hint{position:static;align-self:center;flex:none;font-size:8px;padding:5px 6px;margin-left:auto}
+.pow{width:min(32%,130px);aspect-ratio:1;flex:none;background:#d6453d;display:grid;place-items:center;
+  clip-path:polygon(50% 0,61% 20%,84% 6%,79% 30%,100% 38%,82% 54%,96% 78%,71% 73%,63% 100%,49% 80%,32% 98%,28% 74%,4% 84%,17% 58%,0 40%,21% 32%,12% 7%,37% 20%);
+  animation:powIn .55s cubic-bezier(.2,1.6,.4,1)}
+.pow-in{width:84%;height:84%;background:#f2c14e;display:grid;place-items:center;clip-path:inherit}
+.pow span{font-family:var(--pix);font-size:clamp(18px,7vw,34px);color:#d6453d;transform:rotate(-12deg);text-shadow:3px 3px 0 #0b0c0f}
+@keyframes powIn{from{transform:scale(0) rotate(-40deg)}to{transform:none}}
+@media (prefers-reduced-motion:reduce){.pow{animation:none}}
 </style>
 
 </head>
@@ -168,9 +184,6 @@ canvas{display:block;width:100%;height:100%;image-rendering:pixelated;image-rend
 
   <div class="screen" id="screen">
     <canvas id="cv" width="192" height="192"></canvas>
-    <div class="hint" id="hint"></div>
-    <div class="callout" id="callout" hidden></div>
-    <div class="toast" id="toast" hidden></div>
     <div class="box" id="box" hidden></div>
     <div class="overlay" id="overlay">
       <h2>ATLAS <span>SHIFT</span></h2>
@@ -179,6 +192,12 @@ canvas{display:block;width:100%;height:100%;image-rendering:pixelated;image-rend
       <button class="go alt" id="loadTitle">LOAD SAVE</button>
       <p id="best"></p>
     </div>
+  </div>
+
+  <div class="msgbar" id="msgbar">
+    <div class="callout" id="callout" hidden></div>
+    <div class="toast" id="toast" hidden></div>
+    <div class="hint" id="hint"></div>
   </div>
 
   <div class="tray">
@@ -190,7 +209,7 @@ canvas{display:block;width:100%;height:100%;image-rendering:pixelated;image-rend
     <div class="stick" id="stick" aria-label="Movement stick"><span class="ring"></span><div class="knob" id="knob"></div></div>
     <div class="ab"><button class="btn b" id="bB" aria-label="B button">B</button><button class="btn a" id="bA" aria-label="A button">A</button></div>
   </div>
-  <p class="keys">Arrows or WASD to move · Space / E = A · X / Esc = B · M = menu</p>
+  <p class="keys">Arrows or WASD to move · Space / E = A · B = B · M = menu</p>
 </main>
 
 <script>
@@ -1277,7 +1296,7 @@ function register(){
 
 /* ---------- input ---------- */
 function press(k){presses.push(k);}
-const KEYMAP={ArrowUp:'up',KeyW:'up',ArrowDown:'down',KeyS:'down',ArrowLeft:'left',KeyA:'left',ArrowRight:'right',KeyD:'right',Space:'A',Enter:'A',KeyE:'A',KeyZ:'A',KeyX:'B',Escape:'B',Backspace:'B',KeyQ:'B',KeyM:'MENU',KeyP:'MENU'};
+const KEYMAP={ArrowUp:'up',KeyW:'up',ArrowDown:'down',KeyS:'down',ArrowLeft:'left',KeyA:'left',ArrowRight:'right',KeyD:'right',Space:'A',Enter:'A',KeyE:'A',KeyZ:'A',KeyX:'B',Escape:'B',Backspace:'B',KeyQ:'B',KeyB:'B',KeyM:'MENU',KeyP:'MENU'};
 addEventListener('keydown',e=>{
   const k=KEYMAP[e.code];if(!k||ui==='title'||ui==='end')return;
   e.preventDefault();if(e.repeat)return;
@@ -1508,7 +1527,7 @@ function drawCarry(){
   }
 }
 /* ---------- bonus level: break run to the corner store ---------- */
-const BR={},GROUND=150,PX=52;
+const BR={},GROUND=150,STREET=178,PX=52;
 function breakOffer(next){
   overlay.innerHTML=`<h2>BREAK <span>TIME?</span></h2><p>Perfect 5.0 day. You earned a skate down 2nd Ave to the corner store before Day ${next}.</p>
     <div class="levels"><button class="go" id="offerGo">GO ON A BREAK</button><button class="go alt" id="offerSkip">SKIP · START DAY ${next}</button></div>`;
@@ -1529,13 +1548,18 @@ function startBreak(next){
       dog:()=>{o.w=10;o.h=7;o.vx=-22;},
       ledge:()=>{o.w=48+Math.floor(rnd()*40);o.h=9;o.grind=true;},rail:()=>{o.w=56+Math.floor(rnd()*40);o.h=14;o.grind=true;},bench:()=>{o.w=34;o.h=10;o.grind=true;}})[t]();
     obs.push(o);
-    if(rnd()<.45)obs.push({t:'sticker',x:o.x+Math.floor(o.w/2)-3,w:6,h:0,y:o.h+15+Math.floor(rnd()*8),got:false});
+    o.gy=GROUND;if(rnd()<.45)obs.push({t:'sticker',x:o.x+Math.floor(o.w/2)-3,w:6,h:0,gy:GROUND,y:o.h+15+Math.floor(rnd()*8),got:false});
     x+=o.w+70+Math.floor(rnd()*90);
   }
-  Object.assign(BR,{x:0,v:80,h:0,vh:0,grind:null,trick:null,trickT:0,combo:0,ground:0,score:0,hearts:3,bail:0,inv:0,obs,END,done:false,seed:Math.floor(rnd()*1e6),grindT:0,stickers:0,next:typeof next==='number'?next:null});
+  for(let sx=380;sx<END-300;sx+=200+Math.floor(rnd()*260)){
+    const t=rnd()<.62?'car':'pothole',o={t,x:sx,gy:STREET};
+    if(t==='car'){o.w=30;o.h=15;o.vx=-(28+rnd()*24);o.col=pick(['#d6453d','#3f7fd6','#f2c14e','#f1ede4','#26282e','#2f6b4f','#8e5bd0'],rnd);}else{o.w=16;o.h=0;}
+    obs.push(o);if(rnd()<.4)obs.push({t:'sticker',x:sx+40,w:6,h:0,gy:STREET,y:14+Math.floor(rnd()*10),got:false});
+  }
+  Object.assign(BR,{gy:GROUND,x:0,v:80,h:0,vh:0,grind:null,trick:null,trickT:0,combo:0,ground:0,score:0,hearts:3,bail:0,inv:0,obs,END,done:false,seed:Math.floor(rnd()*1e6),grindT:0,stickers:0,next:typeof next==='number'?next:null});
   for(const k in hold)hold[k]=0;
   ui='break';overlay.hidden=true;box.hidden=true;hintEl.textContent='';document.body.classList.add('breakmode');fit();
-  toast('Break time! Right = push, left = slow down. A = ollie. A or B in the air = tricks. Land on ledges, rails and benches to grind.');
+  toast('One try! Right = push, left = slow. Up/down = sidewalk or street. A = ollie, A/B in the air = tricks. Grind ledges, rails and benches.');
 }
 function breakPress(k){
   const B=BR;if(B.done||B.bail>0)return;
@@ -1555,7 +1579,8 @@ function bailOut(){
 function updateBreak(dt){
   const B=BR;if(B.done)return;
   if(B.bail>0){B.bail-=dt;B.v=Math.max(30,B.v-60*dt);if(B.bail<=0)B.inv=1.2;}
-  else{const tgt=hold.right?118:hold.left?48:80;B.v+=(tgt-B.v)*Math.min(1,dt*1.5);}
+  else{const tgt=(hold.right?118:hold.left?48:80)+(B.gy>165?14:0);B.v+=(tgt-B.v)*Math.min(1,dt*1.5);}
+  if(B.bail<=0&&!B.grind){const d=(hold.down?1:0)-(hold.up?1:0);B.gy=Math.max(GROUND,Math.min(STREET+2,B.gy+d*75*dt));}
   if(B.inv>0)B.inv-=dt;
   B.x+=B.v*dt;
   for(const o of B.obs)if(o.vx)o.x+=o.vx*dt;
@@ -1564,7 +1589,7 @@ function updateBreak(dt){
   else if(B.h>0||B.vh>0){
     const prev=B.h;B.vh-=520*dt;B.h+=B.vh*dt;
     if(B.vh<0&&B.bail<=0)for(const o of B.obs){
-      if(!o.grind||B.x+3<o.x||B.x-3>o.x+o.w)continue;
+      if(!o.grind||B.x+3<o.x||B.x-3>o.x+o.w||Math.abs((o.gy||GROUND)-B.gy)>6)continue;
       if(B.h<=o.h+1&&prev>=o.h-3){if(B.trickT>0){bailOut();break;}
         B.grind=o;B.h=o.h;B.vh=0;B.combo++;B.grindT=0;toast(o.t==='rail'?'Boardslide!':o.t==='bench'?'Bench grind!':'50-50 on the ledge!','good');blip(330,.25,'sawtooth',.02);break;}
     }
@@ -1573,8 +1598,8 @@ function updateBreak(dt){
   if(B.h<=0&&!B.grind){B.ground+=dt;if(B.ground>.35)B.combo=0;}else B.ground=0;
   if(B.bail<=0&&B.inv<=0){
     for(const o of B.obs){
-      if(o.t==='sticker'){if(!o.got&&Math.abs(o.x+3-B.x)<7&&Math.abs(o.y-(B.h+9))<9){o.got=true;B.stickers++;B.score+=15;blip(1200,.06,'square',.03);}continue;}
-      if(B.x+3<o.x||B.x-3>o.x+o.w)continue;
+      if(o.t==='sticker'){if(!o.got&&Math.abs(o.x+3-B.x)<7&&Math.abs((o.gy||GROUND)-B.gy)<9&&Math.abs(o.y-(B.h+9))<9){o.got=true;B.stickers++;B.score+=15;blip(1200,.06,'square',.03);}continue;}
+      if(B.x+3<o.x||B.x-3>o.x+o.w||Math.abs((o.gy||GROUND)-B.gy)>6)continue;
       if(o.t==='crack'){if(B.h<1){bailOut();break;}continue;}
       if(o.grind){if(B.grind!==o&&B.h<o.h-3){bailOut();break;}continue;}
       if(B.h<o.h-1){bailOut();break;}
@@ -1605,8 +1630,7 @@ function renderBreak(){
   R(ctx,0,140,W,16,'#bdb9b0');for(let sx=-mod(cam,16);sx<W;sx+=16)R(ctx,Math.round(sx),140,1,16,'#a9a59d');
   for(let sx=-mod(cam,160);sx<W;sx+=160){const lx=Math.round(sx+70);R(ctx,lx,92,2,48,'#4a4f5a');R(ctx,lx-4,90,10,3,'#4a4f5a');R(ctx,lx-3,93,8,1,'#f6e7a8');}
   R(ctx,0,156,W,3,'#e9e6e0');R(ctx,0,159,W,33,'#3a3d45');for(let sx=-mod(cam,24);sx<W;sx+=24)R(ctx,Math.round(sx),175,12,2,'#f2c14e');
-  const gy=GROUND;
-  for(const o of B.obs){const sx=Math.round(o.x-cam);if(sx<-120||sx>W+20)continue;
+  const drawO=o=>{const sx=Math.round(o.x-cam);if(sx<-120||sx>W+20)return;const gy=o.gy||GROUND;
     switch(o.t){
       case 'cone':R(ctx,sx+1,gy-8,4,7,'#ee8a3a');R(ctx,sx+2,gy-10,2,2,'#ee8a3a');R(ctx,sx+1,gy-5,4,1,'#f4f1ea');R(ctx,sx,gy-1,6,1,'#c0392b');break;
       case 'bag':R(ctx,sx,gy-6,10,6,'#1d1f24');R(ctx,sx+2,gy-8,6,2,'#1d1f24');R(ctx,sx+4,gy-9,2,1,'#3a3d45');R(ctx,sx+2,gy-5,2,1,'#4a4f5a');break;
@@ -1619,19 +1643,27 @@ function renderBreak(){
       case 'rail':R(ctx,sx,gy-o.h,o.w,2,'#c4c9d1');R(ctx,sx,gy-o.h+2,o.w,1,'#8b919c');for(let k=3;k<o.w-3;k+=24)R(ctx,sx+k,gy-o.h+2,2,o.h-2,'#8b919c');R(ctx,sx+o.w-3,gy-o.h+2,2,o.h-2,'#8b919c');break;
       case 'bench':R(ctx,sx,gy-o.h-7,o.w,2,'#9a6638');R(ctx,sx,gy-o.h,o.w,3,'#b9824d');R(ctx,sx,gy-o.h+3,o.w,1,'#6b4527');R(ctx,sx+2,gy-o.h+3,2,o.h-3,'#26282e');R(ctx,sx+o.w-4,gy-o.h+3,2,o.h-3,'#26282e');break;
       case 'sticker':if(!o.got){const bob=Math.round(Math.sin((B.x+o.x)/14));R(ctx,sx,gy-o.y+bob,6,6,'#f2c14e');R(ctx,sx+1,gy-o.y+1+bob,4,4,'#e46aa6');R(ctx,sx+2,gy-o.y+2+bob,2,2,'#f4f1ea');}break;
-    }}
-  const bx=PX,by=GROUND-Math.round(B.h);
+          case 'car':R(ctx,sx,gy-12,o.w,9,o.col);R(ctx,sx+6,gy-17,o.w-13,6,o.col);R(ctx,sx+8,gy-16,6,4,'#9cc8de');R(ctx,sx+16,gy-16,5,4,'#9cc8de');R(ctx,sx,gy-9,2,2,'#f6e7a8');R(ctx,sx+o.w-2,gy-9,2,2,'#d6453d');R(ctx,sx+3,gy-4,6,4,'#1d1f24');R(ctx,sx+o.w-9,gy-4,6,4,'#1d1f24');R(ctx,sx+5,gy-3,2,2,'#8b919c');R(ctx,sx+o.w-7,gy-3,2,2,'#8b919c');break;
+      case 'pothole':R(ctx,sx,gy-1,16,4,'#26282e');R(ctx,sx+2,gy-2,12,1,'#4a4f5a');R(ctx,sx+4,gy+3,8,1,'#26282e');break;
+    }};
+  const drawP=()=>{
+  const bx=PX,by=B.gy-Math.round(B.h);
   if(B.bail>0){
-    R(ctx,bx-8,GROUND-4,12,4,STAFF.shirt);R(ctx,bx+4,GROUND-5,5,5,STAFF.skin);R(ctx,bx+4,GROUND-6,5,2,STAFF.hair);R(ctx,bx-14,GROUND-3,6,2,STAFF.pants);
-    const t=.9-B.bail;R(ctx,bx+10+Math.round(t*40),GROUND-4-Math.round(Math.sin(t*6)*6),12,2,'#26282e');
+    R(ctx,bx-8,B.gy-4,12,4,STAFF.shirt);R(ctx,bx+4,B.gy-5,5,5,STAFF.skin);R(ctx,bx+4,B.gy-6,5,2,STAFF.hair);R(ctx,bx-14,B.gy-3,6,2,STAFF.pants);
+    const t=.9-B.bail;R(ctx,bx+10+Math.round(t*40),B.gy-4-Math.round(Math.sin(t*6)*6),12,2,'#26282e');
   }else if(!(B.inv>0&&Math.floor(B.inv*12)%2)){
-    R(ctx,bx-6,GROUND,12,2,'rgba(0,0,0,.25)');
+    R(ctx,bx-6,B.gy,12,2,'rgba(0,0,0,.25)');
     if(B.trick==='Kickflip'){const ph=Math.floor(B.trickT*24)%3;R(ctx,bx-7,by-2,14,ph===1?1:3,ph===0?'#26282e':'#d6453d');}
     else if(B.trick==='Shove-it'){const w=Math.floor(B.trickT*24)%2?6:14;R(ctx,bx-Math.floor(w/2),by-2,w,3,'#26282e');R(ctx,bx-Math.floor(w/2)+1,by-2,w-2,1,'#d6453d');}
     else{R(ctx,bx-7,by-2,14,3,'#26282e');R(ctx,bx-6,by-2,12,1,'#d6453d');R(ctx,bx-5,by+1,2,1,'#f4f1ea');R(ctx,bx+3,by+1,2,1,'#f4f1ea');}
     if(B.grind)for(let k=0;k<3;k++)R(ctx,bx-8-Math.floor(Math.random()*6),by+Math.floor(Math.random()*2),1,1,pick(['#f2c14e','#ee8a3a','#f4f1ea']));
     drawPerson(ctx,bx,by-3,STAFF,'right',0,false);
   }
+  };
+  for(const o of B.obs)if((o.gy||GROUND)<165)drawO(o);
+  if(B.gy<165)drawP();
+  for(const o of B.obs)if((o.gy||GROUND)>=165)drawO(o);
+  if(B.gy>=165)drawP();
   R(ctx,1,1,27,10,'#0b0c0f');for(let i=0;i<3;i++)heart(3+i*8,3,i<B.hearts);
   const pw=96,px0=48;R(ctx,px0,4,pw,4,'#0b0c0f');R(ctx,px0+1,5,Math.round((pw-2)*Math.min(1,B.x/B.END)),2,'#4fc47f');R(ctx,px0+pw+1,2,6,8,'#2f6b4f');R(ctx,px0+pw+3,3,2,5,'#f2c14e');
   const sc=String(B.score),w=pWidth(sc);R(ctx,W-w-6,1,w+5,10,'#0b0c0f');pText(sc,W-w-3,3,'#f2c14e');
@@ -1646,9 +1678,9 @@ function finishBreak(made){
     overlay.innerHTML=`<h2>${made?'CORNER <span>STORE</span>':'BREAK <span>OVER</span>'}</h2>
       <p>${made?`You grabbed ${drink} and ${snack}. Time to skate back to work.`:'Too many slams. You limp back to the shop.'}</p>
       <div class="stats"><span>Score</span><b>${B.score}</b><span>Stickers grabbed</span><b>${B.stickers}</b><span>Hearts left</span><b>${Math.max(0,B.hearts)}</b><span>Best break</span><b>${Math.max(best,B.score)}</b></div>
-      <div class="levels"><button class="go" id="brAgain">SKATE IT AGAIN</button><button class="go alt" id="brBack">${B.next?`BACK TO WORK · DAY ${B.next}`:'BACK TO WORK'}</button></div>`;
+      <div class="levels"><button class="go" id="brBack">BACK TO WORK</button></div>`;
     overlay.hidden=false;ui='end';document.body.classList.remove('breakmode');fit();
-    $('brAgain').addEventListener('click',()=>startBreak(B.next));$('brBack').addEventListener('click',()=>B.next?startShift(B.next):renderTitle());
+    $('brBack').addEventListener('click',()=>{const f=afterBreak;afterBreak=null;if(f)f();else if(B.next)startShift(B.next);else renderTitle();});
   },made?1000:0);
 }
 let last=performance.now();
@@ -1742,14 +1774,26 @@ function endShift(reason){
   if(passed&&hasNext&&readUnlocked()<n+1){writeUnlocked(n+1);unlockedNow=true;}
   const perfect=G.stars.length>0&&avg>=4.95;
   const verdict=(perfect?'Perfect 5.0! You earned a break. ':'')+(goalHit?`Sales goal hit at ${fmtClock(G.minute)}. `:passed?'Made it to close. ':'')+(passed?(unlockedNow?`Day ${n+1} unlocked.`:'Day complete.'):`Not quite. Hit $${LV().target}, or close with 3 stars and at least 3 sales.`);
+  const showResults=()=>{
   overlay.innerHTML=`<h2>DAY ${n} <span>${passed?'DONE':'OVER'}</span></h2><p>${verdict}</p>
     <div class="stats"><span>Sales</span><b>$${G.sales.toLocaleString()}</b><span>Customers helped</span><b>${G.served}</b><span>Walked out</span><b>${G.walkouts}</b><span>Wrong totals</span><b>${G.wrongTotals}</b>${G.stock?`<span>Restocks</span><b>${G.restocks}</b>`:''}<span>Messes cleaned</span><b>${G.cleaned||0}</b><span>Rating</span><b>${G.stars.length?'★ '+avg.toFixed(1):'—'}</b></div>
-    <div class="levels">${perfect&&!(passed&&hasNext)?`<button class="go" id="goBreak">GO ON A BREAK</button>`:''}${passed&&hasNext?`<button class="go" id="nextDay">START DAY ${n+1}</button>`:''}<button class="go${passed&&hasNext?' alt':''}" id="again">REPLAY DAY ${n}</button><button class="go alt" id="toMenu">ALL DAYS</button></div>`;
+    <div class="levels">${passed&&hasNext?`<button class="go" id="nextDay">START DAY ${n+1}</button>`:''}<button class="go${passed&&hasNext?' alt':''}" id="again">REPLAY DAY ${n}</button><button class="go alt" id="toMenu">ALL DAYS</button></div>`;
   overlay.hidden=false;
-  if($('nextDay'))$('nextDay').addEventListener('click',()=>perfect?breakOffer(n+1):startShift(n+1));
+  if($('nextDay'))$('nextDay').addEventListener('click',()=>startShift(n+1));
   $('again').addEventListener('click',()=>startShift(n));
   $('toMenu').addEventListener('click',renderTitle);
-  if($('goBreak'))$('goBreak').addEventListener('click',()=>startBreak());
+  };
+  if(perfect)powOffer(showResults);else showResults();
+}
+let afterBreak=null;
+function powOffer(after){
+  sfx.cash();setTimeout(()=>blip(1568,.25,'square',.05),180);
+  overlay.innerHTML=`<div class="pow"><div class="pow-in"><span>POW!</span></div></div><h2>BONUS <span>UNLOCKED</span></h2>
+    <p>Perfect 5.0 day. Skate down 2nd Ave to the corner store. You get one try.</p>
+    <div class="levels" style="flex-direction:row"><button class="go" id="powGo" style="flex:1;text-align:center">GO ON A BREAK</button><button class="go alt" id="powSkip" style="text-align:center">SKIP</button></div>`;
+  overlay.hidden=false;
+  $('powGo').addEventListener('click',()=>{afterBreak=after;startBreak();});
+  $('powSkip').addEventListener('click',after);
 }
 function ensureAudio(){if(!ac){try{ac=new (window.AudioContext||window.webkitAudioContext)();}catch(_){ac=null;}}
   if(ac&&ac.state==='suspended')ac.resume();if(ac&&music.on)musicStart();}
