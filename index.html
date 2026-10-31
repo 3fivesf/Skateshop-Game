@@ -84,6 +84,12 @@ canvas{display:block;width:100%;height:100%;image-rendering:pixelated;image-rend
 .hint{position:absolute;bottom:6px;right:6px;font-family:var(--pix);font-size:9px;background:rgba(10,11,14,.82);color:var(--ink);padding:5px 7px;border:2px solid var(--ink)}
 .hint:empty{display:none}
 .toast{position:absolute;top:calc(8.4% + 4px);left:6px;max-width:62%;font-size:13px;background:rgba(10,11,14,.88);padding:5px 8px;border-left:4px solid var(--accent);line-height:1.3}
+.callout{position:absolute;left:6px;bottom:6px;max-width:66%;background:#f4f1ea;color:#15171c;border:3px solid #0b0c0f;padding:5px 8px 6px;font-size:12px;line-height:1.3;box-shadow:3px 3px 0 #0b0c0f;animation:pop .18s steps(3)}
+.callout::after{content:"";position:absolute;left:14px;top:-9px;border:6px solid transparent;border-bottom-color:#0b0c0f}
+.callout b{display:flex;align-items:center;gap:5px;font-family:var(--pix);font-weight:400;font-size:8px;margin-bottom:3px;color:#3a404c}
+.callout i{width:8px;height:8px;border:1px solid #0b0c0f;flex:none}
+@keyframes pop{from{transform:scale(.6);opacity:.2}to{transform:none;opacity:1}}
+@media (prefers-reduced-motion:reduce){.callout{animation:none}}
 .toast.bad{border-left-color:var(--bad)}
 .toast.good{border-left-color:var(--good)}
 .box{position:absolute;left:3%;right:3%;bottom:3%;max-height:88%;display:flex;flex-direction:column;gap:6px;background:#0b0c0f;border:3px solid var(--ink);outline:3px solid #0b0c0f;padding:10px 12px;font-size:clamp(12px,3.3vw,16px);line-height:1.45}
@@ -163,6 +169,7 @@ canvas{display:block;width:100%;height:100%;image-rendering:pixelated;image-rend
   <div class="screen" id="screen">
     <canvas id="cv" width="192" height="192"></canvas>
     <div class="hint" id="hint"></div>
+    <div class="callout" id="callout" hidden></div>
     <div class="toast" id="toast" hidden></div>
     <div class="box" id="box" hidden></div>
     <div class="overlay" id="overlay">
@@ -176,7 +183,7 @@ canvas{display:block;width:100%;height:100%;image-rendering:pixelated;image-rend
 
   <div class="tray">
     <section><span class="lbl">Tickets</span><div class="tickets" id="tickets"><span class="empty">No requests yet</span></div></section>
-    <section class="wide" id="stockSec" hidden><span class="lbl">Floor stock</span><div class="stock" id="stock"></div></section>
+    <section class="wide" id="stockSec" hidden><span class="lbl" id="stockLbl">Floor stock</span><div class="stock" id="stock"></div></section>
   </div>
 
   <div class="pad" id="pad">
@@ -206,12 +213,12 @@ const STOCK_MAP=[
 "QQQQQQQQQQQQ",
 "QxxxxxxxxxxQ",
 "Q,,,,,,,,,,Q",
-"Qsss,xxxxxxQ",
-"Qsvs,,,,,,,Q",
-"Qsss,xxxxxxQ",
+"Qttt,xxxxxxQ",
+"Qsss,,,,,,,Q",
+"Qsls,xxxxxxQ",
 "Qsls,,,,,,,Q",
 "Qsls,www,bbQ",
-"Qsss,EEE,,,Q",
+"Qsls,EEE,,,Q",
 "Qsss,,,,,bbQ",
 "Qrrr,kkqqmmQ",
 "QQQQQQQQQQQQ"];
@@ -252,7 +259,7 @@ const SHORT={decks:'Decks',shoes:'Shoes',tees:'Tees',hoodies:'Sweats',hats:'Hats
 const SECTION_TILES=[];FLOOR_MAP.forEach((row,r)=>[...row].forEach((ch,c)=>{if(TILE_SECTION[ch])SECTION_TILES.push([c,r,TILE_SECTION[ch]]);}));
 const STATIONS={b:['tees','hoodies','rack','hats'],x:['shoes'],k:['decks'],q:['case']};
 const STATION_NAMES={b:'Clothing bins',x:'Shoe shelves',k:'Deck cubbies',q:'Wheels & hardware'};
-const SKATE=new Set(['s','v','l','r']);
+const SKATE=new Set(['s','v','l','r','t']);
 const STOCK_MAX=6;
 const LEVELS=[
   {n:1,name:'Opening shift',target:250,goal:'Learn the floor. One item per customer.',maxItems:m=>1,complete:false,spawn:[26,18],cap:m=>m<60?1:2,pat:.45,clock:2.0,selfShare:.15,randCap:1,breakEvery:4,breakLen:10,stock:false},
@@ -532,8 +539,15 @@ function stockTile(ch,x,y,c,r,rnd){
       R(rc,x+1,y+13,14,2,'#c4c9d1');R(rc,x+1,y+2,14,1,'#5e3d24');
       break;
     case 'l':
-      R(rc,x,y,16,16,'#8b8782');R(rc,x+4,y,8,16,'#a9a59d');R(rc,x+5,y,6,16,'#bdb9b0');R(rc,x+4,y,1,16,'#c4c9d1');R(rc,x+11,y,1,16,'#c4c9d1');
-      if(tileAt(c,r+1)!=='l')R(rc,x+4,y+14,8,2,'#7a7671');
+      R(rc,x,y,16,16,'#8b8782');
+      R(rc,x+2,y,12,16,'#c08b55');R(rc,x+3,y,10,16,'#d1a066');R(rc,x+2,y,1,16,'#c4c9d1');R(rc,x+13,y,1,16,'#c4c9d1');
+      for(let k=2;k<16;k+=5)R(rc,x+4,y+k,8,1,'rgba(0,0,0,.08)');
+      if(tileAt(c,r-1)!=='l')R(rc,x+2,y,12,1,'#e8eaee');
+      if(tileAt(c,r+1)!=='l'){R(rc,x+2,y+13,12,3,'#8a5f34');R(rc,x+2,y+15,12,1,'#5e3d24');}
+      break;
+    case 't':
+      R(rc,x,y,16,16,'#b98c58');for(let k=0;k<6;k++)R(rc,x,y+4+k*2,16,1,'rgba(0,0,0,'+(0.17-k*0.03)+')');
+      R(rc,x,y,16,2,'#5e3d24');R(rc,x,y+2,16,2,'#c4c9d1');
       break;
     case 'r':
       R(rc,x,y,16,16,'#b98c58');for(let k=0;k<6;k++)R(rc,x,y+k*2,16,1,'rgba(0,0,0,'+(0.02+k*0.03)+')');
@@ -849,6 +863,18 @@ function finishIdle(c){
   if(Math.random()<.7)addMess(c.stand,ITEMS[c.req[0]].section);
   c.got=c.req.slice();c.carry=true;c.asked=true;c.mood='<3';c.moodT=1.2;joinQueue(c);
 }
+const CALLS={any:["Hello? Anyone working today?","Did the employee get lost in the basement?","Is this a self-checkout kind of shop now?","Should I just leave the money on the counter?","Did they go get it from the back? Like, the WAY back?","I'll just stand here. Like a mannequin."],
+  rude:["Bro, I've been standing here forever.","This is why I shop online.","HELLOOO?"],nice:["No rush! Just checking if anyone's here.","Take your time! I'll be up front."],
+  skate:["Is someone skating down there?!","I can hear a grind box. I know that sound.","Are you ollieing on the clock?"]};
+let calloutTimer=null;
+function showCallout(c){
+  const el=$('callout');let lines=CALLS.any.slice();
+  if(CALLS[c.pers])lines=lines.concat(CALLS[c.pers],CALLS[c.pers]);
+  if(G.player.skate)lines=lines.concat(CALLS.skate,CALLS.skate);
+  el.innerHTML=`<b><i style="background:${c.look.shirt}"></i>${nameOf(c).toUpperCase()} · UPSTAIRS</b>${pick(lines)}`;
+  el.hidden=false;el.style.animation='none';void el.offsetWidth;el.style.animation='';
+  clearTimeout(calloutTimer);calloutTimer=setTimeout(()=>{el.hidden=true;},3400);
+}
 function updateCustomer(c,dt){
   c.moving=false;
   if(c.path.length){
@@ -880,27 +906,135 @@ function updateCustomer(c,dt){
 /* ---------- player ---------- */
 const hold={up:0,down:0,left:0,right:0};let lastDir='down';const presses=[];
 const DIRV={up:[0,-1],down:[0,1],left:[-1,0],right:[1,0]};
-const walkable=ch=>ch==='F'||ch==='O'||ch===','||SKATE.has(ch);
+const CO_LOOK={skin:'#c68863',hair:'#1d1f24',shirt:'#2f6b4f',pants:'#2b2d33',cap:'#26282e',baggy:true,staff:true};
+const DOOR_PT=()=>[colX(9),rowY(2)],CO_HOME=()=>[colX(7),rowY(2)];
+function setupCo(){G.co={x:colX(7),y:rowY(2),dir:'down',frame:0,ft:0,moving:false,map:'floor',vis:true,state:'idle',t:5,path:[],sec:null,box:false,dis:null,disT:0,nag:false,checks:0,skT:0};}
+function coRouteFrom(x,y,tx,ty){
+  if(y<=rowY(2)+2&&ty<=rowY(2)+2)return [[tx,ty]];
+  if(y>=rowY(10))return [[TRUNK,y],[TRUNK,rowY(9)]].concat(coRouteFrom(TRUNK,rowY(9),tx,ty));
+  let pre=[];
+  if(y<=rowY(2)+2){pre=[[colX(6),y],[colX(6),rowY(4)]];x=colX(6);y=rowY(4);}
+  if(ty<=rowY(2)+2)return pre.concat(route(x,y,colX(6),rowY(4)),[[colX(6),rowY(2)],[tx,ty]]);
+  if(ty>=rowY(10))return pre.concat(route(x,y,TRUNK,rowY(9)),[[TRUNK,rowY(11)],[tx,ty]]);
+  return pre.concat(route(x,y,tx,ty));
+}
+function coMove(dt){const c=G.co;c.moving=false;if(!c.path.length)return true;
+  const [tx,ty]=c.path[0],dx=tx-c.x,dy=ty-c.y,d=Math.hypot(dx,dy),sp=40*dt;
+  if(d<=sp){c.x=tx;c.y=ty;c.path.shift();}else{c.x+=dx/d*sp;c.y+=dy/d*sp;c.moving=true;c.dir=Math.abs(dx)>Math.abs(dy)?(dx>0?'right':'left'):(dy>0?'down':'up');}
+  c.ft+=dt;if(c.ft>.17){c.ft=0;c.frame++;}return !c.path.length;}
+function lowestShelf(){let best=null;for(const s2 of Object.keys(SECTIONS)){const n=G.stock[s2];if(n<=3&&(best===null||n<G.stock[best]))best=s2;}return best;}
+function startDistract(ok){const c=G.co;c.dis=pick(['dice','smoke','skate']);c.state='toDis';c.disT=0;c.nag=false;c.ok=!!ok;c.disLen=ok?12:14+Math.random()*8;
+  if(c.dis==='dice')c.path=coRouteFrom(c.x,c.y,colX(9),rowY(9));
+  else if(c.dis==='smoke')c.path=coRouteFrom(c.x,c.y,G.release?colX(0):colX(7),rowY(11));
+  else c.path=coRouteFrom(c.x,c.y,...DOOR_PT());}
+function coBackToWork(){const c=G.co;c.dis=null;c.disT=0;c.moving=false;c.state='back';
+  if(c.map==='stock'){c.map='floor';c.vis=true;[c.x,c.y]=DOOR_PT();}
+  c.path=coRouteFrom(c.x,c.y,...CO_HOME());}
+function updateCo(dt){
+  const c=G.co;if(!c||!G.stock)return;
+  switch(c.state){
+    case 'idle':c.t-=dt;if(c.t<=0){if(Math.random()<.15){startDistract();break;}
+      const s2=lowestShelf();if(s2){c.sec=s2;c.state='toDoor';c.path=coRouteFrom(c.x,c.y,...DOOR_PT());}else c.t=3;}break;
+    case 'toDoor':if(coMove(dt)){c.vis=false;c.map='stock';c.state='down';c.t=6+Math.random()*3;}break;
+    case 'down':c.t-=dt;if(c.t<=0){c.vis=true;c.map='floor';[c.x,c.y]=DOOR_PT();c.box=true;c.state='toShelf';const [sc,sr]=SPOTS[c.sec];c.path=coRouteFrom(c.x,c.y,colX(sc),rowY(sr));}break;
+    case 'toShelf':if(coMove(dt)){G.stock[c.sec]=STOCK_MAX;c.box=false;G.coRestocks=(G.coRestocks||0)+1;toast(`Danny restocked the ${SECTIONS[c.sec]}.`,'good');
+      if(Math.random()<.4)startDistract();else{c.state='back';c.path=coRouteFrom(c.x,c.y,...CO_HOME());}}break;
+    case 'back':if(coMove(dt)){c.state='idle';c.t=3+Math.random()*4;c.dir='down';}break;
+    case 'toHelp':{const cu=G.customers.find(o=>o.id===c.cid);
+      if(!cu||cu.state!=='wait'){c.state='back';c.path=coRouteFrom(c.x,c.y,...CO_HOME());break;}
+      if(coMove(dt)){c.state='helping';c.t=2.2;c.dir=cu.x>c.x?'right':cu.x<c.x?'left':cu.y>c.y?'down':'up';}break;}
+    case 'helping':{c.t-=dt;if(c.t>0)break;const cu=G.customers.find(o=>o.id===c.cid);
+      if(cu&&cu.state==='wait'){
+        const need=stillNeeds(cu),empty=G.stock?need.find(k=>G.stock[ITEMS[k].section]<=0):null;
+        if(empty)toast(`Danny: "The ${SECTIONS[ITEMS[empty].section]} is empty. Somebody has to restock it."`,'bad');
+        else{if(G.stock)need.forEach(k=>{G.stock[ITEMS[k].section]--;});cu.got=cu.req.slice();cu.asked=true;cu.mood='<3';cu.moodT=1.4;joinQueue(cu);
+          G.coHelps=(G.coHelps||0)+1;toast(`Danny helped the ${nameOf(cu).toLowerCase()}. They're heading to the register.`,'good');}}
+      c.state='back';c.path=coRouteFrom(c.x,c.y,...CO_HOME());break;}
+    case 'toDis':if(coMove(dt)){if(c.dis==='skate'){c.map='stock';c.x=colX(2);c.y=rowY(4);}c.state='dis';c.dir='down';}break;
+    case 'dis':c.disT+=dt;
+      if(c.dis==='skate'){c.skT+=dt;c.x=colX(2);c.y=rowY(4)+(Math.sin(c.skT*1.6)*.5+.5)*(rowY(9)-rowY(4));c.dir=Math.cos(c.skT*1.6)>0?'down':'up';}
+      if(!c.ok&&c.disT>9&&!c.nag){c.nag=true;toast("Danny is slacking. Go find him if you need help.",'bad');}
+      if(c.disT>(c.disLen||18)){coBackToWork();if(G.map==='floor')toast('Danny wandered back to work.');}
+      break;
+  }
+}
+function coStatus(){const c=G.co;if(!c)return '';
+  if(c.state==='dis'||c.state==='toDis')return {dice:'playing dice by the window',smoke:'on a smoke break out front',skate:'skating in the basement'}[c.dis];
+  if(c.state==='toHelp'||c.state==='helping')return 'helping a customer';
+  return {idle:'on standby',toDoor:'heading to the stock room',down:`grabbing a ${SECTIONS[c.sec]} box`,toShelf:`restocking the ${SECTIONS[c.sec]}`,back:'heading back'}[c.state]||'';}
+function coOrder(v){
+  const c=G.co;
+  if(c.state==='toShelf'||c.state==='down')return toast('Danny: "Let me drop off this box first."');
+  c.dis=null;c.disT=0;c.box=false;
+  if(c.map==='stock'){c.map='floor';c.vis=true;[c.x,c.y]=DOOR_PT();}
+  if(v==='restock'){
+    let best=null;for(const s2 of Object.keys(SECTIONS))if(G.stock[s2]<STOCK_MAX&&(best===null||G.stock[s2]<G.stock[best]))best=s2;
+    if(!best){toast('Danny: "Every shelf is full, boss."');c.state='back';c.path=coRouteFrom(c.x,c.y,...CO_HOME());return;}
+    c.sec=best;c.state='toDoor';c.path=coRouteFrom(c.x,c.y,...DOOR_PT());toast(`Danny: "On it. Grabbing a ${SECTIONS[best]} box."`);
+  }else if(v==='help'){
+    const w=G.customers.filter(o=>o.state==='wait'&&!o.path.length&&!o.release).sort((a,b)=>a.patience-b.patience)[0];
+    if(!w){toast('Danny: "Nobody is waiting right now."');c.state='back';c.path=coRouteFrom(c.x,c.y,...CO_HOME());return;}
+    const spot=w.talk||w.stand;c.cid=w.id;c.state='toHelp';c.path=coRouteFrom(c.x,c.y,colX(spot[0]),rowY(spot[1]));
+    toast(`Danny: "I got the ${nameOf(w).toLowerCase()}."`);
+  }else if(v==='chill'){startDistract(true);toast('Danny: "Sweet. Five minutes, tops."');}
+  else{c.state='back';c.path=coRouteFrom(c.x,c.y,...CO_HOME());}
+}
+function talkCo(){
+  const c=G.co,who='Danny',waiting=G.customers.filter(o=>o.state==='wait'&&!o.release).length;
+  let line;
+  if((c.state==='dis'||c.state==='toDis')&&!c.ok){c.checks++;
+    line=c.state==='toDis'?"Wasn't going anywhere! What do you need?":pick({dice:["My bad, I was on a hot streak. What do you need?","Okay okay, one more roll. Kidding. What's up?"],
+      smoke:["Just needed a minute. What do you need?","Yeah yeah, I'm coming in. What's up?"],skate:["Had to try the box real quick. Landed it though! What do you need?","I was testing the ramp. For safety reasons. What's up?"]}[c.dis]);}
+  else if(c.state==='dis')line="I'm on break, remember? What's up?";
+  else line=pick(["What do you need, boss?","Yo. What's the move?","Need something?","You see the new shop video? I'm in the background at like 2:10. Anyway, what's up?"]);
+  say([{who,text:line}],()=>openPicker({title:'Tell Danny to',options:[
+    {label:'Restock shelves',value:'restock'},
+    {label:'Help a waiting customer',right:`${waiting} waiting`,value:'help'},
+    {label:'Take a quick break',value:'chill'},
+    {label:'Keep doing your thing',value:'keep'}],
+    onCancel:()=>{if(c.state==='dis'&&!c.ok)coBackToWork();},
+    onPick:v=>{if(v==='keep'){if(c.state==='dis'&&!c.ok)coBackToWork();return;}coOrder(v);}}));
+}
+function drawCo(){const c=G.co,x=Math.round(c.x),y=Math.round(c.y),skating=c.state==='dis'&&c.dis==='skate';
+  if(skating){R(ctx,x-2,y-7,4,12,'#26282e');R(ctx,x-1,y-6,2,10,'#7ac74f');drawPerson(ctx,x,y-3,CO_LOOK,c.dir,0,false);}
+  else drawPerson(ctx,x,y,CO_LOOK,c.dir,c.frame,c.moving);
+  if(c.box){R(ctx,x+3,y-10,7,6,'#c08b55');R(ctx,x+3,y-10,7,1,'#e2b973');R(ctx,x+6,y-10,1,6,'#a8733f');}
+  if(c.state==='dis'&&c.dis==='dice'){R(ctx,x-8,y+1,3,3,'#f4f1ea');R(ctx,x+5,y+2,3,3,'#f4f1ea');R(ctx,x-7,y+2,1,1,'#1d1f24');R(ctx,x+6,y+3,1,1,'#1d1f24');R(ctx,x+7,y+2,1,1,'#1d1f24');}
+  if(c.state==='dis'&&c.dis==='smoke'){const t=performance.now()/450;R(ctx,x+5,y-9,3,1,'#f4f1ea');R(ctx,x+8,y-9,1,1,'#ee8a3a');
+    for(let k=0;k<3;k++){const ph=(t+k)%3;R(ctx,x+7+Math.round(ph),Math.round(y-12-ph*4),2,2,'rgba(225,225,225,'+(0.75-ph*.22)+')');}}
+  if(c.state==='dis')drawBubble(x,y-(skating?3:0),'...');
+}
+const walkable=ch=>ch==='F'||ch==='O'||ch===','||ch==='P'||SKATE.has(ch);
 const solidAt=(px,py)=>!walkable(tileAt(Math.floor(px/T),Math.floor(py/T)));
-const blocked=(x,y)=>solidAt(x-5,y-5)||solidAt(x+5,y-5)||solidAt(x-5,y-.5)||solidAt(x+5,y-.5);
+const blocked=(x,y)=>y>H-1||solidAt(x-5,y-5)||solidAt(x+5,y-5)||solidAt(x-5,y-.5)||solidAt(x+5,y-.5);
 const tileUnder=p=>tileAt(Math.floor(p.x/T),Math.floor((p.y-3)/T));
 const KICKER_TRICKS=['Kickflip','Heelflip','360 flip','Pop shove-it','Varial flip','Hardflip'];
 const QP_TRICKS=['Frontside air','Backside air','Rock to fakie','Axle stall','Disaster'];
 function readSkateBest(){try{return +localStorage.getItem('atlas-shift-skate')||0;}catch(_){return 0;}}
 function launch(p,dur,kind){p.air=p.airMax=dur;p.launch=kind;p.overLedge=false;blip(kind==='ollie'?520:640,.08,'square',.04,240);}
-function ollie(){const p=G.player;if(p.air>0)return;launch(p,tileUnder(p)==='v'?.75:.42,tileUnder(p)==='v'?'kicker':'ollie');}
-function land(p){
-  const under=tileUnder(p);let name,pts;
-  if(p.launch==='qp'){name=pick(QP_TRICKS);pts=60;}
-  else if(under==='l'){name='50-50 grind';pts=45;}
-  else if(p.launch==='kicker'){name=pick(KICKER_TRICKS);pts=50;}
-  else if(p.overLedge){name='Ollie over the ledge';pts=30;}
-  else{name='Ollie';pts=10;}
+const FLIPS=['Kickflip','Heelflip','Varial flip','Tre flip','Hardflip'];
+function ollie(){const p=G.player;
+  if(p.air>0){if(!p.flip){p.flip=pick(FLIPS);blip(780,.06,'square',.04,260);}return;}
+  if(p.grinding)endGrind(p);
+  launch(p,.48,'ollie');p.flip=null;}
+function shoveIt(){const p=G.player;if(p.air>0&&!p.flip){p.flip='Pop shove-it';blip(700,.06,'square',.04,180);}}
+function skateScore(name,pts){
   const sk=G.sk||(G.sk={score:0,combo:0,comboT:0});
   sk.combo=sk.comboT>0?sk.combo+1:1;sk.comboT=1.6;
   const got=pts*sk.combo;sk.score+=got;
   const best=readSkateBest();if(sk.score>best){try{localStorage.setItem('atlas-shift-skate',String(sk.score));}catch(_){}}
   toast(`${name} +${got}${sk.combo>1?` (x${sk.combo})`:''} · Skate ${sk.score}`,'good');blip(330,.06,'triangle',.05);
+}
+function endGrind(p){p.grinding=false;skateScore(pick(['50-50','Boardslide','5-0','Smith grind','Crooked grind'])+` ${p.grindT.toFixed(1)}s`,Math.round(25+p.grindT*70));}
+function land(p){
+  const under=tileUnder(p),flip=p.flip;p.flip=null;
+  if(under==='l'){p.grinding=true;p.grindT=0;if(flip)skateScore(`${flip} into the box`,70);else blip(330,.2,'sawtooth',.02);return;}
+  let name,pts;
+  if(p.launch==='qp'){name=pick(QP_TRICKS);pts=60;}
+  else if(p.overLedge){name='Ollie over the box';pts=30;}
+  else{name='Ollie';pts=10;}
+  if(flip){name=(p.launch==='qp'?flip+' out of the ramp':flip+(p.overLedge?' over the box':''));pts+=45;}
+  skateScore(name,pts);
 }
 function updatePlayer(dt){
   const p=G.player;let dx=hold.right-hold.left,dy=hold.down-hold.up,sm=1;
@@ -913,11 +1047,14 @@ function updatePlayer(dt){
       if(hold[lastDir])p.dir=lastDir;else p.dir=dx?(dx>0?'right':'left'):(dy>0?'down':'up');}
     else{p.vx*=1-Math.min(1,dt*1.1);p.vy*=1-Math.min(1,dt*1.1);}
     const under=tileUnder(p);
-    if(p.air<=0&&under==='r'&&p.vy>25){launch(p,.7,'qp');p.vy=-Math.abs(p.vy)*.95;}
-    if(p.air<=0&&under==='v'&&Math.hypot(p.vx,p.vy)>55&&p.dir==='down'){launch(p,.75,'kicker');}
+    if(p.air<=0&&under==='r'&&p.vy>25){if(p.grinding)endGrind(p);launch(p,.75,'qp');p.flip=null;p.vy=-Math.abs(p.vy)*.95;}
+    if(p.air<=0&&under==='t'&&p.vy<-25){if(p.grinding)endGrind(p);launch(p,.75,'qp');p.flip=null;p.vy=Math.abs(p.vy)*.95;}
     const mx=p.vx*dt,my=p.vy*dt;
-    if(!blocked(p.x+mx,p.y))p.x+=mx;else p.vx=0;
-    if(!blocked(p.x,p.y+my))p.y+=my;else p.vy=0;
+    const boxAt=(x,y)=>tileAt(Math.floor(x/T),Math.floor((y-3)/T))==='l';
+    const hitBox=(x,y)=>p.air<=0&&!p.grinding&&boxAt(x,y);
+    if(!blocked(p.x+mx,p.y)&&!hitBox(p.x+mx,p.y))p.x+=mx;else p.vx*=-.3;
+    if(!blocked(p.x,p.y+my)&&!hitBox(p.x,p.y+my))p.y+=my;else p.vy*=-.3;
+    if(p.grinding){p.grindT+=dt;if(!boxAt(p.x,p.y))endGrind(p);}
     if(p.air>0){if(tileUnder(p)==='l')p.overLedge=true;p.air-=dt;if(p.air<=0){p.air=0;land(p);}}
     p.moving=Math.hypot(p.vx,p.vy)>8;
     if(!SKATE.has(tileUnder(p))&&p.air<=0){p.skate=false;p.vx=p.vy=0;}
@@ -941,6 +1078,8 @@ function target(){
     const ms=(G.messes||[]).find(m=>(m.c===ptc&&m.r===ptr)||(m.c===ftc&&m.r===ftr));
     if(ms)return {kind:'mess',m:ms};}
   if(G.map==='floor'&&p.dir!=='up'&&p.y<3*T+6&&p.y>T&&p.x<3*T+4)return {kind:'tile',ch:'R',tc:1,tr:3};
+  if(G.co&&G.co.vis&&G.co.map===G.map){const c=G.co,vx=c.x-cx,vy=(c.y-4)-cy,dist=Math.hypot(vx,vy),reach=c.dis==='skate'?40:22;
+    if(dist<reach&&(vx*fx+vy*fy>2||dist<10))return {kind:'co'};}
   let best=null,bd=99;
   for(const c of (G.map==='floor'?G.customers:[])){
     if(c.state!=='wait'&&c.state!=='queue'&&c.state!=='idle')continue;
@@ -959,6 +1098,7 @@ function hintFor(t){
   if(!t)return '';
   if(t.kind==='customer')return 'A · Talk';
   if(t.kind==='mess')return 'A · Clean up';
+  if(t.kind==='co')return 'A · Talk to Danny';
   const ch=t.ch;
   if(TILE_SECTION[ch])return 'A · '+SECTIONS[TILE_SECTION[ch]];
   if(ch==='R')return 'A · Register';
@@ -1013,6 +1153,7 @@ function interact(){
   const t=target();if(!t)return;
   if(t.kind==='customer')return talkTo(t.c);
   if(t.kind==='mess')return cleanMess(t.m);
+  if(t.kind==='co')return talkCo();
   const ch=t.ch;
   if(G.map==='stock')return interactStock(ch);
   if(TILE_SECTION[ch])return openSection(TILE_SECTION[ch]);
@@ -1183,6 +1324,7 @@ function handlePresses(){
       else if(k==='B'&&!pk.noCancel){const oc=pk.onCancel;pk=null;closeBox();if(oc)oc();}
     }else if(ui==='play'){
       if(k==='A'){if(G.player.skate)ollie();else interact();}
+      else if(k==='B'&&G.player.skate&&G.player.air>0){shoveIt();}
       else if(k==='B'){
         if(G.hands.length){G.hands.forEach(h=>{const s=ITEMS[h].section;if(s==='release'){if(G.release)G.release.stash[h.split('-')[1]]++;}else if(G.stock)G.stock[s]=Math.min(STOCK_MAX,G.stock[s]+1);});G.hands=[];toast('Put everything back on the shelves.');blip(400,.08,'square',.04,-120);}
         else if(G.box){toast(`Put the ${SECTIONS[G.box]} box back.`);G.box=null;blip(400,.08,'square',.04,-120);}
@@ -1196,7 +1338,7 @@ const fmtClock=m=>{const t=11*60+Math.min(m,540),h=Math.floor(t/60),mm=Math.floo
 let lastHud='';
 function updateHud(){
   const avg=G.stars.length?(G.stars.reduce((a,b)=>a+b,0)/G.stars.length):0;
-  const hands=G.hands.join('|')+'|'+(G.box||'')+'|'+JSON.stringify(G.stock);
+  const hands=G.hands.join('|')+'|'+(G.box||'')+'|'+JSON.stringify(G.stock)+'|'+(G.co?G.co.state+G.co.dis+G.co.sec:'');
   const tk=G.customers.filter(c=>c.state!=='leave'&&(c.asked||c.state==='queue')).map(c=>c.id+c.state+c.got.length).join('|');
   const key=[fmtClock(G.minute),G.sales,avg.toFixed(1),hands,tk].join('#');
   if(key===lastHud)return;lastHud=key;
@@ -1204,6 +1346,7 @@ function updateHud(){
   $('sales').textContent=`$${G.sales.toLocaleString()} / $${LV().target}`;
   $('rating').textContent=G.stars.length?'★ '+avg.toFixed(1):'—';
   $('stockSec').hidden=!G.stock;
+  $('stockLbl').textContent=G.co?`Floor stock · Danny: ${coStatus()}`:'Floor stock';
   if(G.stock)$('stock').innerHTML=Object.keys(SECTIONS).map(s=>{const n=G.stock[s];
     return `<div class="st${n<=0?' out':n<=2?' low':''}"><span>${SHORT[s]}</span><span class="segs">${[...Array(STOCK_MAX)].map((_,i)=>`<i class="${i<n?'on':''}"></i>`).join('')}</span></div>`;}).join('');
   const rows=G.customers.filter(c=>c.state!=='leave'&&(c.asked||c.state==='queue')).map(c=>{
@@ -1240,6 +1383,10 @@ function update(dt){
   }
   if(G.sales>=LV().target){endShift('goal');return;}
   for(const m of (G.messes||[])){m.t+=dt;if(m.t>30&&!m.warned){m.warned=true;toast(`The ${SECTIONS[m.sec]} is still a mess. Customers there are getting impatient.`,'bad');}}
+  if(G.map==='stock'){G.stockT=(G.stockT||0)+dt;G.callT=(G.callT||0)-dt;
+    if(G.stockT>10&&G.callT<=0){const w=G.customers.filter(c=>c.state==='wait'||c.state==='queue');if(w.length){showCallout(pick(w));G.callT=7;}}}
+  else{G.stockT=0;G.callT=0;if(!$('callout').hidden){$('callout').hidden=true;}}
+  updateCo(dt);
   updatePlayer(dt);
   for(const c of G.customers.slice())updateCustomer(c,dt);
   if(G.closed&&(G.customers.length===0||G.minute>=540))endShift();
@@ -1271,12 +1418,15 @@ function render(){
     drawPerson(ctx,c.x,c.y,c.look,c.dir,c.frame,c.moving);
     if(seat){R(ctx,cx2-7,cy2-6,14,3,'#1f4fa0');R(ctx,cx2-7,cy2-6,14,1,'#3f7fd6');R(ctx,cx2-7,cy2-3,1,3,'#9aa1ad');R(ctx,cx2+6,cy2-3,1,3,'#9aa1ad');}
     if(c.board){const bx=Math.round(c.x)+(c.dir==='left'?-8:6),by=Math.round(c.y)-13;R(ctx,bx,by,3,12,c.boardCol);R(ctx,bx,by,1,12,'#1d1f24');R(ctx,bx+1,by+2,2,1,'#f4f1ea');R(ctx,bx+1,by+9,2,1,'#f4f1ea');}}}));
+  if(G.co&&G.co.vis&&(G.co.map==='stock')===!onFloor)ents.push({y:G.co.y,f:drawCo});
   ents.push({y:p.y,f:()=>{
     if(p.skate){const h=p.air>0?Math.round(Math.sin(Math.PI*(1-p.air/p.airMax))*(p.launch==='ollie'?8:13)):0,bx=Math.round(p.x),by=Math.round(p.y);
       R(ctx,bx-6,by,12,2,'rgba(0,0,0,.25)');
       const horiz=p.dir==='left'||p.dir==='right';
-      if(horiz){R(ctx,bx-7,by-2-h,14,3,'#26282e');R(ctx,bx-6,by-2-h,12,1,'#d6453d');R(ctx,bx-5,by+1-h,2,1,'#f4f1ea');R(ctx,bx+3,by+1-h,2,1,'#f4f1ea');}
-      else{R(ctx,bx-2,by-7-h,4,12,'#26282e');R(ctx,bx-1,by-6-h,2,10,'#d6453d');}
+      const fc=p.flip&&p.air>0&&Math.floor(performance.now()/60)%2?'#26282e':'#d6453d';
+      if(p.grinding)for(let k=0;k<3;k++)R(ctx,bx-6+Math.floor(Math.random()*12),by-Math.floor(Math.random()*3),1,1,pick(['#f2c14e','#ee8a3a','#f4f1ea']));
+      if(horiz){R(ctx,bx-7,by-2-h,14,3,'#26282e');R(ctx,bx-6,by-2-h,12,1,fc);R(ctx,bx-5,by+1-h,2,1,'#f4f1ea');R(ctx,bx+3,by+1-h,2,1,'#f4f1ea');}
+      else{R(ctx,bx-2,by-7-h,4,12,'#26282e');R(ctx,bx-1,by-6-h,2,10,fc);}
       drawPerson(ctx,p.x,p.y-3-h,STAFF,p.dir,0,false);}
     else drawPerson(ctx,p.x,p.y,STAFF,p.dir,p.frame,p.moving);}});
   ents.sort((a,b)=>a.y-b.y).forEach(e=>e.f());
@@ -1295,7 +1445,7 @@ function render(){
     const t=G.player.skate?null:target();
     if(t&&t.kind==='tile'){const x=t.tc*T,y=t.tr*T,a='#00aeef';
       [[0,0],[13,0],[0,13],[13,13]].forEach(([ox,oy])=>{R(ctx,x+ox,y+oy,3,1,a);R(ctx,x+ox+(ox?2:0),y+oy,1,3,a);R(ctx,x+ox,y+oy+(oy?2:0),3,1,a);});}
-    const h=G.player.skate?`A · Ollie · Skate ${G.sk?G.sk.score:0} · Best ${readSkateBest()}`:hintFor(t);if(hintEl.textContent!==h)hintEl.textContent=h;
+    const h=G.player.skate?(G.player.air>0?'A flip · B shove-it':`A ollie · Skate ${G.sk?G.sk.score:0}`):hintFor(t);if(hintEl.textContent!==h)hintEl.textContent=h;
   }else if(hintEl.textContent)hintEl.textContent='';
   if(ui!=='title'&&ui!=='end'){drawCarry();drawCounters();}
 }
@@ -1359,7 +1509,13 @@ function drawCarry(){
 }
 /* ---------- bonus level: break run to the corner store ---------- */
 const BR={},GROUND=150,PX=52;
-function startBreak(){
+function breakOffer(next){
+  overlay.innerHTML=`<h2>BREAK <span>TIME?</span></h2><p>Perfect 5.0 day. You earned a skate down 2nd Ave to the corner store before Day ${next}.</p>
+    <div class="levels"><button class="go" id="offerGo">GO ON A BREAK</button><button class="go alt" id="offerSkip">SKIP · START DAY ${next}</button></div>`;
+  overlay.hidden=false;
+  $('offerGo').addEventListener('click',()=>startBreak(next));$('offerSkip').addEventListener('click',()=>startShift(next));
+}
+function startBreak(next){
   ensureAudio();
   const rnd=mulberry(Math.floor(Math.random()*1e6));
   const obs=[],END=4200;let x=240;
@@ -1376,7 +1532,7 @@ function startBreak(){
     if(rnd()<.45)obs.push({t:'sticker',x:o.x+Math.floor(o.w/2)-3,w:6,h:0,y:o.h+15+Math.floor(rnd()*8),got:false});
     x+=o.w+70+Math.floor(rnd()*90);
   }
-  Object.assign(BR,{x:0,v:80,h:0,vh:0,grind:null,trick:null,trickT:0,combo:0,ground:0,score:0,hearts:3,bail:0,inv:0,obs,END,done:false,seed:Math.floor(rnd()*1e6),grindT:0,stickers:0});
+  Object.assign(BR,{x:0,v:80,h:0,vh:0,grind:null,trick:null,trickT:0,combo:0,ground:0,score:0,hearts:3,bail:0,inv:0,obs,END,done:false,seed:Math.floor(rnd()*1e6),grindT:0,stickers:0,next:typeof next==='number'?next:null});
   for(const k in hold)hold[k]=0;
   ui='break';overlay.hidden=true;box.hidden=true;hintEl.textContent='';document.body.classList.add('breakmode');fit();
   toast('Break time! Right = push, left = slow down. A = ollie. A or B in the air = tricks. Land on ledges, rails and benches to grind.');
@@ -1490,9 +1646,9 @@ function finishBreak(made){
     overlay.innerHTML=`<h2>${made?'CORNER <span>STORE</span>':'BREAK <span>OVER</span>'}</h2>
       <p>${made?`You grabbed ${drink} and ${snack}. Time to skate back to work.`:'Too many slams. You limp back to the shop.'}</p>
       <div class="stats"><span>Score</span><b>${B.score}</b><span>Stickers grabbed</span><b>${B.stickers}</b><span>Hearts left</span><b>${Math.max(0,B.hearts)}</b><span>Best break</span><b>${Math.max(best,B.score)}</b></div>
-      <div class="levels"><button class="go" id="brAgain">SKATE IT AGAIN</button><button class="go alt" id="brBack">BACK TO WORK</button></div>`;
+      <div class="levels"><button class="go" id="brAgain">SKATE IT AGAIN</button><button class="go alt" id="brBack">${B.next?`BACK TO WORK · DAY ${B.next}`:'BACK TO WORK'}</button></div>`;
     overlay.hidden=false;ui='end';document.body.classList.remove('breakmode');fit();
-    $('brAgain').addEventListener('click',startBreak);$('brBack').addEventListener('click',renderTitle);
+    $('brAgain').addEventListener('click',()=>startBreak(B.next));$('brBack').addEventListener('click',()=>B.next?startShift(B.next):renderTitle());
   },made?1000:0);
 }
 let last=performance.now();
@@ -1511,35 +1667,19 @@ function readBest(){try{return +localStorage.getItem('atlas-shift-best')||0;}cat
 function writeBest(v){try{localStorage.setItem('atlas-shift-best',String(v));}catch(_){}}
 function showBest(){const b=readBest();$('best').textContent=b?`Best shift so far: $${b.toLocaleString()}`:'';}
 const INTROS={
-  1:[{who:'Manager',text:'Welcome to Atlas. Doors open at 11, so here is the quick tour.'},
-    {who:'Manager',text:'Decks hang on the brick wall to the left. Hats, the clothing rack and shoes are on the right wall. Tees and sweatshirts are on the two center tables.'},
-    {who:'Manager',text:'Wheels, trucks, bearings, grip, socks and stickers live in the glass case. The register is the computer at the end of the counter.'},
-    {who:'Manager',text:'When someone shows a red ! stand on the flashing marker next to them and press A to hear what they need.'},
-    {who:'Manager',text:'Grab it from the shelf, hand it over, then get behind the register and ring them up. Watch their patience bars.'},
-    {who:'Manager',text:'B puts back whatever you are holding. Finish with 3 stars or better to unlock Day 2.'}],
-  2:[{who:'Manager',text:'Day 2. Today you learn the stock room. It will be quiet for a while.'},
-    {who:'Manager',text:'Shelves hold limited stock now. The Floor stock bars under the screen show what is left, and empty shelves go dark.'},
-    {who:'Manager',text:'The deck wall is almost empty. Go through the door behind the gallery wall and down to the basement.'},
-    {who:'Manager',text:'With empty hands, grab a box from the deck cubbies, bring it up and press A on the deck wall.'},
-    {who:'Manager',text:'The number in the top right corner shows how many customers are waiting, even when you are downstairs. It flashes red when someone is running out of patience.'},
-    {who:'Manager',text:'There is a little skate spot down there too. Roll on and press A to ollie.'}],
-  3:[{who:'Manager',text:'Day 3, and it is a Saturday. More people today.'},
-    {who:'Manager',text:'Later on some customers want two things. Grab both before you hand them over, and restock between customers.'}],
-  4:[{who:'Manager',text:'Day 4. Release day. The new SB Dunk drops at 11. One pair per customer, first come first served.'},
-    {who:'Manager',text:'There is already a line out front. Some of them camped out with chairs.'},
-    {who:'Manager',text:'We only got 7 pairs. They are stacked in pink boxes in the fitting room, behind the gallery wall.'},
-    {who:'Manager',text:'When a line customer reaches the register, talk to them for their size, grab that pair from the fitting room and ring them up.'},
-    {who:'Manager',text:'The Dunk counter up top shows how many pairs are left. When they run out, the line breaks up.'},
-    {who:'Manager',text:'Nike SB and Adidas also just came in on the shoe wall. Regular customers still need help, too.'}],
-  5:[{who:'Manager',text:'Day 5. The release wiped out the floor. Several shelves are low.'},
-    {who:'Manager',text:'Help whoever is waiting first, then restock between customers. Shelves fill back to 6.'}],
-  6:[{who:'Manager',text:'Day 6. Some customers are building a complete: deck, trucks, wheels, bearings and grip.'},
-    {who:'Manager',text:'Match truck width to the deck. 8.0 and 8.25 decks take 139s, an 8.5 takes 149s.'}],
-  7:[{who:'Manager',text:'Day 7. New Balance and Asics just landed, so all six brands are on the wall.'},
-    {who:'Manager',text:'Orders are getting bigger. Stay stocked and keep the line moving.'}],
-  8:[{who:'Manager',text:'Day 8. Holiday rush, the busiest day of the year.'},
-    {who:'Manager',text:'Everything you learned, all at once. Have fun with it.'}]
+  1:[{who:'Manager',text:'Welcome to Atlas. Doors open at 11.'},
+    {who:'Manager',text:'When someone shows a red !, stand on the marker next to them and press A to hear what they want.'},
+    {who:'Manager',text:'Grab it from the shelf, hand it over, then ring them up at the register behind the counter.'}],
+  2:[{who:'Manager',text:'Shelves run low now. Grab boxes in the stock room through the door behind the gallery wall.'}],
+  3:[{who:'Manager',text:'Danny is working with you today. Talk to him to tell him what to do.'}],
+  4:[{who:'Manager',text:'Release day. SB Dunks drop at 11, one pair per customer.'},
+    {who:'Manager',text:'The pairs are in pink boxes in the fitting room. Grab their size and ring them up.'}],
+  5:[{who:'Manager',text:'The release wiped out the floor. Keep the shelves stocked.'}],
+  6:[{who:'Manager',text:'Some customers want completes. 8.0 and 8.25 decks take 139 trucks, 8.5 takes 149s.'}],
+  7:[{who:'Manager',text:'New Balance and Asics just came in.'}],
+  8:[{who:'Manager',text:'Holiday rush. Good luck.'}]
 };
+
 function readUnlocked(){try{return Math.max(1,Math.min(LEVELS.length,+localStorage.getItem('atlas-shift-unlocked')||1));}catch(_){return 1;}}
 function writeUnlocked(v){try{localStorage.setItem('atlas-shift-unlocked',String(v));}catch(_){}}
 function readDev(){try{return localStorage.getItem('atlas-shift-dev')==='1';}catch(_){return false;}}
@@ -1552,7 +1692,7 @@ function renderTitle(){
     <button class="go alt" id="loadTitle">LOAD SAVE</button>
     <button class="sv" id="devBtn" style="font-size:9px;padding:6px 10px">DEV MODE: ${dev?'ON · ALL DAYS OPEN':'OFF'}</button><p id="best"></p>`;
   $('devBtn').addEventListener('click',()=>{writeDev(!dev);renderTitle();});
-  if($('devBreak'))$('devBreak').addEventListener('click',startBreak);
+  if($('devBreak'))$('devBreak').addEventListener('click',()=>startBreak());
   overlay.querySelectorAll('.lv').forEach(b=>b.addEventListener('click',()=>startShift(+b.dataset.l)));
   $('loadTitle').addEventListener('click',openLoad);
   showBest();ui='title';overlay.hidden=false;
@@ -1590,8 +1730,8 @@ function admitLine(){
 }
 function startShift(n=1){
   ensureAudio();
-  G=freshState(n);setMap('floor');drawStockRoom(n);if(LEVELS[n-1].release)setupRelease();lastHud='';overlay.hidden=true;
-  say(INTROS[n].concat([{who:'Manager',text:`Today's goal is $${LEVELS[n-1].target} in sales. Hit it and you can clock out early. Otherwise, close at 7 with 3 stars or better.`}]));
+  G=freshState(n);setMap('floor');drawStockRoom(n);if(LEVELS[n-1].release)setupRelease();if(n>=3)setupCo();lastHud='';overlay.hidden=true;
+  say(INTROS[n].concat([{who:'Manager',text:n===1?`Today's goal is $${LEVELS[n-1].target} in sales. Hit it, or close at 7 with 3 stars.`:`Goal today: $${LEVELS[n-1].target}.`}]));
 }
 function endShift(reason){
   G.over=true;ui='end';box.hidden=true;
@@ -1604,12 +1744,12 @@ function endShift(reason){
   const verdict=(perfect?'Perfect 5.0! You earned a break. ':'')+(goalHit?`Sales goal hit at ${fmtClock(G.minute)}. `:passed?'Made it to close. ':'')+(passed?(unlockedNow?`Day ${n+1} unlocked.`:'Day complete.'):`Not quite. Hit $${LV().target}, or close with 3 stars and at least 3 sales.`);
   overlay.innerHTML=`<h2>DAY ${n} <span>${passed?'DONE':'OVER'}</span></h2><p>${verdict}</p>
     <div class="stats"><span>Sales</span><b>$${G.sales.toLocaleString()}</b><span>Customers helped</span><b>${G.served}</b><span>Walked out</span><b>${G.walkouts}</b><span>Wrong totals</span><b>${G.wrongTotals}</b>${G.stock?`<span>Restocks</span><b>${G.restocks}</b>`:''}<span>Messes cleaned</span><b>${G.cleaned||0}</b><span>Rating</span><b>${G.stars.length?'★ '+avg.toFixed(1):'—'}</b></div>
-    <div class="levels">${perfect?`<button class="go" id="goBreak">GO ON A BREAK</button>`:''}${passed&&hasNext?`<button class="go${perfect?' alt':''}" id="nextDay">START DAY ${n+1}</button>`:''}<button class="go${passed&&hasNext?' alt':''}" id="again">REPLAY DAY ${n}</button><button class="go alt" id="toMenu">ALL DAYS</button></div>`;
+    <div class="levels">${perfect&&!(passed&&hasNext)?`<button class="go" id="goBreak">GO ON A BREAK</button>`:''}${passed&&hasNext?`<button class="go" id="nextDay">START DAY ${n+1}</button>`:''}<button class="go${passed&&hasNext?' alt':''}" id="again">REPLAY DAY ${n}</button><button class="go alt" id="toMenu">ALL DAYS</button></div>`;
   overlay.hidden=false;
-  if($('nextDay'))$('nextDay').addEventListener('click',()=>startShift(n+1));
+  if($('nextDay'))$('nextDay').addEventListener('click',()=>perfect?breakOffer(n+1):startShift(n+1));
   $('again').addEventListener('click',()=>startShift(n));
   $('toMenu').addEventListener('click',renderTitle);
-  if($('goBreak'))$('goBreak').addEventListener('click',startBreak);
+  if($('goBreak'))$('goBreak').addEventListener('click',()=>startBreak());
 }
 function ensureAudio(){if(!ac){try{ac=new (window.AudioContext||window.webkitAudioContext)();}catch(_){ac=null;}}
   if(ac&&ac.state==='suspended')ac.resume();if(ac&&music.on)musicStart();}
@@ -1725,7 +1865,7 @@ function openMenu(selVal){
   opts.push({label:'Load game',value:'load'});
   if(inShift)opts.push({label:'Quit to all days',value:'quit'});
   if(fromOverlay)opts.push({label:'Close menu',value:'close'});
-  openPicker({title:inShift?'Paused':'Menu',options:opts,sel:Math.max(0,opts.findIndex(o=>o.value===selVal)),onCancel:back,onPick:v=>{
+  openPicker({title:inShift?`Paused · Day ${G.level}: ${LV().name}`:'Menu',lines:inShift?[['Sales',`$${G.sales} / $${LV().target}`],['Clock',fmtClock(G.minute)]]:null,options:opts,sel:Math.max(0,opts.findIndex(o=>o.value===selVal)),onCancel:back,onPick:v=>{
     if(v==='music'){toggleMusic();ui=prev;openMenu('music');return;}
     if(v==='save')return openSave();
     if(v==='load'){if(fromOverlay)ui=prev;return openLoad();}
