@@ -49,7 +49,10 @@ body{
 h1{font-family:var(--pix);font-size:15px;margin:0;letter-spacing:.06em;font-weight:400}
 h1 span{color:var(--accent)}
 .sub{margin:0;color:var(--dim);font-size:12px;letter-spacing:.04em}
-.hud{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.hud{display:grid;grid-template-columns:1fr 1.25fr .8fr auto;gap:5px}
+.hud .sv{align-self:stretch;display:grid;place-items:center}
+.breakmode .hud{display:grid!important}
+body{overflow-x:hidden}
 .hud div{background:var(--panel);border:2px solid var(--line);padding:4px 6px;display:flex;flex-direction:column;gap:2px;min-width:0}
 .lbl{font-size:9px;color:var(--dim);letter-spacing:.12em;text-transform:uppercase}
 .hud b{font-family:var(--pix);font-size:10px;overflow:hidden;text-overflow:ellipsis;font-weight:400;font-variant-numeric:tabular-nums;white-space:nowrap}
@@ -79,7 +82,7 @@ h1 span{color:var(--accent)}
 .st.low .segs i.on{background:var(--gold)}
 .st.out{color:var(--bad)}
 .chip.boxc{background:#5e3d24;border-color:#c08b55}
-.screen{position:relative;width:min(100%,560px);aspect-ratio:1/1;margin:0 auto;box-sizing:border-box;background:#000;border:3px solid var(--ink);box-shadow:0 0 0 3px var(--bg),0 0 0 5px var(--line);overflow:hidden}
+.screen{position:relative;width:min(100%,560px);aspect-ratio:1/1;margin:0 auto;box-sizing:border-box;background:#000;border-block:2px solid var(--line);overflow:hidden}
 canvas{display:block;width:100%;height:100%;image-rendering:pixelated;image-rendering:crisp-edges}
 .hint{position:absolute;bottom:6px;right:6px;font-family:var(--pix);font-size:9px;background:rgba(10,11,14,.82);color:var(--ink);padding:5px 7px;border:2px solid var(--ink)}
 .hint:empty{display:none}
@@ -124,7 +127,7 @@ canvas{display:block;width:100%;height:100%;image-rendering:pixelated;image-rend
 .dot{width:9px;height:9px;flex:none;border:1px solid #000;transform:translateY(1px)}
 .tk s{color:var(--dim)}
 .tk em{font-style:normal;color:var(--good)}
-.pad{display:flex;justify-content:space-between;align-items:center;padding:0 6px;touch-action:none}
+.pad{display:flex;justify-content:space-between;align-items:center;padding:0 6px;touch-action:none;margin-top:auto}
 .dpad{position:relative;width:111px;height:111px;touch-action:none}
 .dpad span{position:absolute;background:#2c313b;border:3px solid #0b0c0f;box-shadow:inset 0 -4px 0 rgba(0,0,0,.35)}
 .dpad .u,.dpad .d{left:37px;width:37px;height:40px}
@@ -135,7 +138,7 @@ canvas{display:block;width:100%;height:100%;image-rendering:pixelated;image-rend
 .dpad .r{right:0;border-left:none}
 .dpad i{position:absolute;left:37px;top:37px;width:37px;height:37px;background:#2c313b;border:0}
 .dpad[data-dir="up"] .u,.dpad[data-dir="down"] .d,.dpad[data-dir="left"] .l,.dpad[data-dir="right"] .r{background:var(--accent)}
-.stick{position:relative;width:118px;height:118px;border-radius:50%;background:#20242c;border:3px solid #0b0c0f;box-shadow:inset 0 0 0 5px #2c313b;touch-action:none;flex:none}
+.stick{position:relative;width:108px;height:108px;border-radius:50%;background:#20242c;border:3px solid #0b0c0f;box-shadow:inset 0 0 0 5px #2c313b;touch-action:none;flex:none}
 .stick .ring{position:absolute;inset:22px;border-radius:50%;border:2px dashed #3a404c;pointer-events:none}
 .knob{position:absolute;left:50%;top:50%;width:54px;height:54px;margin:-27px 0 0 -27px;border-radius:50%;background:#3a404c;border:3px solid #0b0c0f;box-shadow:inset 0 -5px 0 rgba(0,0,0,.35),inset 0 3px 0 rgba(255,255,255,.08);transition:transform .12s ease-out;pointer-events:none}
 .stick.active .knob{background:var(--accent);transition:none}
@@ -144,7 +147,7 @@ canvas{display:block;width:100%;height:100%;image-rendering:pixelated;image-rend
 .btn.a{background:var(--bad);color:var(--ink);margin-top:-20px}
 .btn.b{background:#3a404c;color:var(--ink);margin-top:20px}
 .btn:active,.btn.on{filter:brightness(1.25)}
-.breakmode .hud,.breakmode .tray{display:none!important}
+.breakmode .tray{display:none!important}
 .keys{margin:0;color:var(--dim);font-size:12px;text-align:center}
 @media (hover:hover) and (pointer:fine){ .pad{display:none} }
 @media (hover:none),(pointer:coarse){ .keys{display:none} }
@@ -173,15 +176,11 @@ canvas{display:block;width:100%;height:100%;image-rendering:pixelated;image-rend
 </head>
 <body>
 <main class="wrap">
-  <header class="top">
-    <h1>ATLAS <span>SHIFT</span></h1>
-    <button class="sv" id="menuBtn" aria-label="Open menu">MENU</button>
-  </header>
-
   <div class="hud">
     <div><span class="lbl">Clock</span><b id="clock">11:00 AM</b></div>
     <div><span class="lbl">Sales</span><b id="sales">$0</b></div>
     <div><span class="lbl">Rating</span><b id="rating">—</b></div>
+    <button class="sv" id="menuBtn" aria-label="Open menu">MENU</button>
   </div>
 
   <div class="screen" id="screen">
@@ -624,6 +623,13 @@ function drawPerson(c,x,y,lk,dir,frame,moving){
   if(dir==='down'){R(c,ox+4,oy+4,1,1,E);R(c,ox+7,oy+4,1,1,E);}
   if(dir==='left')R(c,ox+3,oy+4,1,1,E);
   if(dir==='right')R(c,ox+8,oy+4,1,1,E);
+  if(lk.coat)R(c,ox+(lk.baggy?1:2),oy+11,lk.baggy?10:8,2,lk.coat);
+  if(lk.bun&&dir!=='down')R(c,ox+4,oy-2,4,2,lk.hair);else if(lk.bun)R(c,ox+4,oy-1,4,1,lk.hair);
+  if(lk.glasses&&dir!=='up'){if(dir==='down'){R(c,ox+3,oy+4,2,1,E);R(c,ox+7,oy+4,2,1,E);R(c,ox+5,oy+4,2,1,'#6b6f78');}else R(c,dir==='left'?ox+2:ox+8,oy+4,2,1,E);}
+  if(lk.beard&&dir!=='up')R(c,ox+2,oy+5,8,2,lk.beard);
+  if(lk.tie&&dir==='down'){R(c,ox+5,oy+6,2,5,lk.tie);R(c,ox+4,oy+6,1,1,'#f4f1ea');R(c,ox+7,oy+6,1,1,'#f4f1ea');}
+  if(lk.helmet){R(c,ox+1,oy-2,10,4,lk.helmet);R(c,ox+2,oy-3,8,1,lk.helmet);R(c,ox+3,oy-2,3,1,'rgba(255,255,255,.35)');}
+  if(lk.phone&&dir!=='up'){R(c,ox+10,oy+5,2,4,'#1d1f24');R(c,ox+10,oy+6,1,2,'#9cc8de');}
 }
 function drawBubble(x,y,kind){
   const bx=Math.round(x)-5,by=Math.round(y)-30;
@@ -737,14 +743,26 @@ function skaterize(c,chance){
       c.dropPt=[ledgeX(col),LEDGE_Y];}
   }
 }
-const PERS={normal:{pat:1},chill:{pat:.6},nice:{pat:.85},rude:{pat:1.3},story:{pat:.9},asker:{pat:.9}};
-function pickPers(){const r=Math.random();return r<.28?'normal':r<.44?'chill':r<.6?'nice':r<.74?'rude':r<.88?'story':'asker';}
-const persOf=c=>PERS[c.pers]||PERS.normal;
+const PERS={normal:{pat:1},chill:{pat:.6},nice:{pat:.85},rude:{pat:1.3},story:{pat:.9},asker:{pat:.9},weird:{pat:.8}};
+function pickPers(){const r=Math.random();return r<.22?'normal':r<.36?'chill':r<.5?'nice':r<.62?'rude':r<.75?'story':r<.87?'asker':'weird';}
+const persOf=c=>c.special&&SP[c.special]?{pat:SP[c.special].pat||1}:PERS[c.pers]||PERS.normal;
 const DLG={
   nice:["Hey! Hope your day's going good.","What's up! Love this shop, honestly.","Hi! No rush at all.","Yo, this place always smells like fresh grip. Love it."],
   rude:["Took you long enough.","Bro, do you even work here?","Ugh. Finally.","I don't have all day, man.","Can somebody actually help me?"],
   chill:["No rush, dude.","Whenever you get a sec.","Take your time, I'm just vibing.","All good, I'm in no hurry."],
-  stories:["Dude, the same security guard kicked me out of the office ledges three times this week. He knows my name now. We're basically friends.",
+  weird:["Do you sell left-handed griptape?","My cousin says if you hold a deck to your ear you can hear the ocean. Can I try?",
+    "I had a dream this shop was a bowling alley. You were there. You were the pins.","Do bearings come in decaf?",
+    "Is it bad luck to name your board? Mine's named Kevin. Kevin's been weird lately.","I only skate on Tuesdays. It's a whole thing.",
+    "Can I pay in exposure? I have 300 followers. 280 are bots, but still.","It smells like new griptape in here. I would buy that as a candle.",
+    "My dog skates better than me. He has a sponsor. I don't.","Is that TV playing the same video all day? I've watched it four times. I'm not leaving.",
+    "If I buy wheels do I get a free ollie lesson? No? Worth asking.","I'm on a strict diet of only things that fit in my pocket.",
+    "Quick question, is this a skateboard store? Okay. Just checking."],
+  stories:["I learned to kickflip in a parking garage at 2 AM. The security guard clapped. Then he kicked us out.",
+    "My first board was from a garage sale. It had a dolphin on it. I still miss him.",
+    "We filmed a whole part on a phone with a cracked screen. Every clip has a line through it. It's art now.",
+    "My buddy waxed a curb with a birthday candle. It worked too well. We all fell for a week.",
+    "I tried to boardslide the handrail at my old school once. The principal still brings it up.",
+"Dude, the same security guard kicked me out of the office ledges three times this week. He knows my name now. We're basically friends.",
     "My buddy filmed my line on his old VX for four hours. I finally landed it. He forgot to hit record.",
     "We built a DIY ledge under the freeway. It lasted one day before the city took it. Still the best day of my life.",
     "I ollied the big trash can at Shoreview yesterday. Nobody saw it. You have to believe me.",
@@ -755,6 +773,10 @@ const DLG={
     "My shop team tryout is next week. I've mostly been practicing my kickflip face.",
     "I fell asleep watching old shop videos and dreamed I was in one. Background, but still."],
   questions:[
+    {q:"Be real. Is wax essential or a crutch?",a:["Essential","Crutch","Depends on the curb"],r:["Agreed. Wax everything.","Wow. Okay. Purist.","The correct answer, honestly."]},
+    {q:"Regular or goofy? You look goofy.",a:["Regular","Goofy","Mongo"],r:["Could have fooled me.","Called it.","Respect for admitting it."]},
+    {q:"What's the best skate video ever made?",a:["An old classic","Whatever drops next","The Atlas shop video"],r:["Old heads unite.","Optimist. I like it.","Correct. You work here."]},
+
     {q:"Real question. Is the Benihana a real trick or a crime against skateboarding?",a:["Real trick","It's a crime","No comment"],r:["Fair. I'm trying it tonight.","Okay, okay. I'll keep it to myself.","Smart. Stay out of it."]},
     {q:"Do you guys do grip for free if I buy a deck?",a:["Always","If you ask nicely","Two bucks"],r:["Let's go!","Please?","Hmm. Fair enough."]},
     {q:"When's the next Atlas shop video coming out? Am I in it?",a:["Soon","You're the intro","Nobody knows"],r:["Soon is my favorite date.","WAIT. Really?!","Classic shop video timeline."]},
@@ -767,11 +789,13 @@ const DLG={
   still:{nice:"No worries! Still looking for ",rude:"Still waiting on ",chill:"All good. Still need ",normal:"Still looking for "},
   wrong:{nice:"Ah, close! I actually need ",rude:"That's not even close. I said ",chill:"Ha, not quite. I'm after ",normal:"That's not what I asked for. I need "},
   walk:{nice:"had to go. \"No worries, I'll come back later!\"",rude:"stormed out. \"This place is mid.\"",chill:"drifted out. \"It's cool, I'll swing by later.\"",normal:"got tired of waiting and walked out."},
-  hang:["Just waiting on my friend.","I'm not loitering, I'm lurking. It's different.","I'm waiting on my filmer. He's been five minutes away for an hour.","Have you seen the old shop video? I'm in the background at 3:42.",
+  hang:["Just waiting on my friend.","I'm just here for the AC.","Can I charge my phone? It's at 2 percent. My whole life is on there.","Is that clock right? I'm supposed to be at work.","I'm waiting for the bus. This is way nicer than the bus stop.","I'm not loitering, I'm lurking. It's different.","I'm waiting on my filmer. He's been five minutes away for an hour.","Have you seen the old shop video? I'm in the background at 3:42.",
     "I skated here from the train. My board is like sixty percent tape.","Did you see the new video? The soundtrack alone, dude.","Is the skate jam still happening this weekend?","Sick shop. I basically live here."],
-  browse:["Just looking. My bank account said no.","Is this a skate shop or an art gallery? Both? Sick.","I'm just smelling the new grip, ignore me.","Just looking, thanks! Maybe next paycheck.","I'm emotionally looking at that deck."]
+  browse:["Just looking. My bank account said no.","Do these come in my size? I don't know my size.","I'm just touching every hoodie. For research.","I'm not buying, I'm showing my friend on FaceTime. Say hi.","Is this a skate shop or an art gallery? Both? Sick.","I'm just smelling the new grip, ignore me.","Just looking, thanks! Maybe next paycheck.","I'm emotionally looking at that deck."]
 };
 function requestLines(c,who){
+  if(c.special&&SP[c.special].ask)return SP[c.special].ask(listText(c.req.map(k=>ITEMS[k].phrase))).map(t=>({who,text:t}));
+  if(c.pers==='weird')return [{who,text:pick(DLG.weird)},{who,text:`Anyway. I need ${listText(c.req.map(k=>ITEMS[k].phrase))}.`}];
   const need=listText(c.req.map(k=>ITEMS[k].phrase));
   switch(c.pers){
     case 'nice':return [{who,text:`${pick(DLG.nice)} Could I get ${need}?`}];
@@ -781,8 +805,33 @@ function requestLines(c,who){
     default:return [{who,text:c.text}];
   }
 }
+const SPECIALS=[
+  {id:'grandma',name:'Grandma Lou',kind:'buyer',pat:.5,look:{skin:'#f1c9a5',hair:'#d9d5cc',shirt:'#8e5bd0',pants:'#5b4a3a',bun:true,glasses:true,coat:'#6c3fb0'},
+    ask:need=>[`Hello, dear. My grandson wants ${need}. Is that something you have, or is it a video game thing?`],
+    still:'Still waiting, sweetie. No rush, I have all day.',thanks:["Thank you, dear. You remind me of my nephew.","Bless you. He's going to flip. Is that the term?"]},
+  {id:'dad',name:'Cargo Shorts Dad',kind:'buyer',pat:.8,look:{skin:'#e0ac85',hair:'#8a5a2b',shirt:'#3f7fd6',pants:'#c9b38f',glasses:true,cap:'#d6453d'},
+    ask:need=>[`My kid texted me a list. It says ${need}. I'm just going to show you my phone.`],
+    still:"Still looking for my kid's thing. He says hurry.",thanks:["Am I the cool dad now? Don't answer that.","He better not quit skating after this."]},
+  {id:'suit',name:'Suit Guy',kind:'buyer',pat:1.2,look:{skin:'#c68863',hair:'#1d1f24',shirt:'#2b2d33',pants:'#2b2d33',tie:'#d6453d'},
+    ask:need=>[`I have eleven minutes of lunch left. I need ${need}. Go.`],still:'Nine minutes. Still waiting.',thanks:["Midlife crisis: purchased.","Don't tell my boss."]},
+  {id:'ray',name:'Ray',kind:'hang',look:{skin:'#c68863',hair:'#6b6f78',shirt:'#5b4a3a',pants:'#3a3d45',beard:'#9aa1ad',coat:'#4d5a3a',cap:'#2f6b4f',cart:true},
+    idle:["I skated this street in '79. Clay wheels. You kids don't know pain.","Got any water, boss? I'll be outta your hair in a minute.",
+      "I was sponsored by a surf shop that doesn't exist anymore. Neither do my knees.","Saw a guy ollie a shopping cart once. Not mine. Mine's off limits.",
+      "You're doing good work in here. Don't let 'em rush you.","Back in my day the skatepark was a drained pool and a prayer."]},
+  {id:'influencer',name:'Influencer',kind:'browse',look:{skin:'#f1c9a5',hair:'#d9b25e',shirt:'#e46aa6',pants:'#f1ede4',phone:true},
+    idle:["Hiii, can I film a quick TikTok in here? It's for the brand.","Can you pretend to hand me a deck? Okay, again, but cooler.","This lighting is everything.","Don't mind me, I'm going live."]},
+  {id:'carl',name:'Conspiracy Carl',kind:'hang',look:{skin:'#e0ac85',hair:'#b5462e',shirt:'#6d7b8a',pants:'#5b4a3a',glasses:true,beard:'#b5462e'},
+    idle:["Griptape is just sandpaper they don't want you to know about.","The skate stoppers downtown? Same company that makes bearings. Think about it.",
+      "Have you ever seen a skateboard factory? Exactly.","Kickflips were invented in the eighties. Or were they?","Why do they call it a truck if it can't haul anything? Wake up."]},
+  {id:'tourist',name:'Tourist',kind:'browse',look:{skin:'#f1c9a5',hair:'#8a5a2b',shirt:'#f2c14e',pants:'#c9b38f',cap:'#f1ede4',glasses:true},
+    idle:["Is this the shop from the video? Can I take a picture with the counter?","Which way is San Francisco? I think I took the wrong train.","Do you sell postcards? No? Stickers count."]},
+  {id:'grom',name:'Grom',kind:'browse',look:{skin:'#e0ac85',hair:'#4a2f1d',shirt:'#7ac74f',pants:'#3a4a63',helmet:'#d6453d',baggy:true},
+    idle:["Do you guys sponsor people? I can kickflip. Most of the time.","My mom is parking. I have two minutes to pick a deck.","Is that a real pro deck? Can I just hold it?"]}
+];
+const SP=Object.fromEntries(SPECIALS.map(x=>[x.id,x]));
 function spawnRandom(){
-  const kind=Math.random()<.5?'hang':'browse';
+  const sp=Math.random()<.3&&!G.customers.some(o=>o.special&&o.state!=='leave'&&SP[o.special].kind!=='buyer')?pick(SPECIALS.filter(x=>x.kind!=='buyer')):null;
+  const kind=sp?sp.kind:Math.random()<.5?'hang':'browse';
   let stand;
   if(kind==='hang'){
     const taken=takenTiles(),cands=[];
@@ -792,7 +841,7 @@ function spawnRandom(){
   const c={id:G.nextId++,kind,pers:pickPers(),x:TRUNK,y:OFF,dir:'up',frame:0,ft:0,moving:true,state:'in',asked:false,req:[],got:[],text:'',patience:100,mood:null,moodT:0,
     look:newLook(),stand,talk:null,hops:kind==='browse'?2+Math.floor(Math.random()*2):0,idleT:0,
     path:route(TRUNK,OFF,colX(stand[0]),rowY(stand[1]))};
-  skaterize(c,c.kind==='hang'?.6:.5);
+  if(sp){c.special=sp.id;c.look=Object.assign({},sp.look);}else skaterize(c,c.kind==='hang'?.6:.5);
   G.customers.push(c);
   return c;
 }
@@ -809,12 +858,12 @@ function spawnCustomer(forced){
     look,
     stand:[sc,sr],talk:spot?spot.talk:null,
     path:route(TRUNK,OFF,sx,sy)};
-  skaterize(c,.2);
+  if(!forced&&kind==='buyer'&&Math.random()<.14){const sp=pick(SPECIALS.filter(x=>x.kind==='buyer'));c.special=sp.id;c.look=Object.assign({},sp.look);c.pers='special';}else skaterize(c,.2);
   G.customers.push(c);sfx.door();
   if(G.map!=='floor')toast('A customer just walked in upstairs.');
   return c;
 }
-const nameOf=c=>`${c.look.color} shirt`;
+const nameOf=c=>c.special&&SP[c.special]?SP[c.special].name:`${c.look.color} shirt`;
 function stillNeeds(c){const g=c.got.slice();return c.req.filter(k=>{const i=g.indexOf(k);if(i>=0){g.splice(i,1);return false;}return true;});}
 const slotX=i=>colX(Math.min(1+i,4));
 function joinQueue(c){
@@ -1008,7 +1057,7 @@ function talkCo(){
     line=c.state==='toDis'?"Wasn't going anywhere! What do you need?":pick({dice:["My bad, I was on a hot streak. What do you need?","Okay okay, one more roll. Kidding. What's up?"],
       smoke:["Just needed a minute. What do you need?","Yeah yeah, I'm coming in. What's up?"],skate:["Had to try the box real quick. Landed it though! What do you need?","I was testing the ramp. For safety reasons. What's up?"]}[c.dis]);}
   else if(c.state==='dis')line="I'm on break, remember? What's up?";
-  else line=pick(["What do you need, boss?","Yo. What's the move?","Need something?","You see the new shop video? I'm in the background at like 2:10. Anyway, what's up?"]);
+  else line=pick(["What do you need, boss?","Yo. What's the move?","Need something?","You see the new shop video? I'm in the background at like 2:10. Anyway, what's up?"].concat(DLG.danny||[]));
   say([{who,text:line}],()=>openPicker({title:'Tell Danny to',options:[
     {label:'Restock shelves',value:'restock'},
     {label:'Help a waiting customer',right:`${waiting} waiting`,value:'help'},
@@ -1252,7 +1301,8 @@ function talkTo(c){
   const p=G.player;{const dx=c.x-p.x,dy=c.y-p.y;p.dir=Math.abs(dx)>Math.abs(dy)?(dx>0?'right':'left'):(dy>0?'down':'up');}c.dir=({up:'down',down:'up',left:'right',right:'left'})[p.dir];
   const who=nameOf(c);
   if(c.state==='idle'){
-    if(c.kind==='hang')return say([{who,text:pick(c.pers==='story'?DLG.stories:DLG.hang)}]);
+    if(c.special&&SP[c.special].idle)return say([{who,text:pick(SP[c.special].idle)}]);
+    if(c.kind==='hang')return say([{who,text:pick(c.pers==='story'?DLG.stories:c.pers==='weird'?DLG.weird:DLG.hang)}]);
     if(c.kind==='browse')return say([{who,text:pick(DLG.browse)}]);
     return say([{who,text:"I got it, thanks! Grabbing my stuff now."}]);
   }
@@ -1281,6 +1331,7 @@ function talkTo(c){
     c.patience-=12;sfx.bad();
     return say([{who,text:`${DLG.wrong[c.pers]||DLG.wrong.normal}${listText(need.map(k=>ITEMS[k].phrase))}.`}]);
   }
+  if(c.special&&SP[c.special].still)return say([{who,text:SP[c.special].still}]);
   return say([{who,text:`${DLG.still[c.pers]||DLG.still.normal}${listText(need.map(k=>ITEMS[k].phrase))}.`}]);
 }
 function openSection(sec){
@@ -1324,7 +1375,7 @@ function register(){
     onPick:v=>{
       const p=c.patience;let s=p>70?5:p>45?4:p>22?3:2;
       if(v!==total){s=Math.max(1,s-1);G.wrongTotals++;sfx.bad();toast(`That doesn't add up. They correct you: $${total}.`,'bad');}
-      else{sfx.cash();toast(`"${pick(DLG.thanks[c.pers]||DLG.thanks.normal)}" +$${total}`,'good');}
+      else{sfx.cash();toast(`"${pick((c.special&&SP[c.special].thanks)||DLG.thanks[c.pers]||DLG.thanks.normal)}" +$${total}`,'good');}
       G.sales+=total;G.stars.push(s);G.served++;leave(c,'<3');
       const L=LV();if(L.breakEvery&&G.served%L.breakEvery===0&&!G.closed){G.breakT=L.breakLen;toast(`Sold! +$${total} · Quiet moment, catch your breath${G.stock?' or restock':''}.`,'good');}
     }});
@@ -1473,6 +1524,8 @@ function render(){
     const seat=c.chair&&c.state==='line'&&!c.path.length,cx2=Math.round(c.x),cy2=Math.round(c.y);
     if(seat){R(ctx,cx2-6,cy2-14,12,8,'#1f4fa0');R(ctx,cx2-6,cy2-14,12,1,'#3f7fd6');}
     drawPerson(ctx,c.x,c.y,c.look,c.dir,c.frame,c.moving);
+    if(c.look.cart){const kx=cx2+(c.dir==='left'?-17:7),ky=cy2;R(ctx,kx,ky-10,10,7,'#9aa1ad');for(let k=0;k<3;k++)R(ctx,kx+1+k*3,ky-9,1,5,'#6b6f78');
+      R(ctx,kx+1,ky-12,4,3,'#c08b55');R(ctx,kx+5,ky-13,3,4,'#3f7fd6');R(ctx,kx+1,ky-3,2,2,'#26282e');R(ctx,kx+7,ky-3,2,2,'#26282e');}
     if(seat){R(ctx,cx2-7,cy2-6,14,3,'#1f4fa0');R(ctx,cx2-7,cy2-6,14,1,'#3f7fd6');R(ctx,cx2-7,cy2-3,1,3,'#9aa1ad');R(ctx,cx2+6,cy2-3,1,3,'#9aa1ad');}
     if(c.board){const bx=Math.round(c.x)+(c.dir==='left'?-8:6),by=Math.round(c.y)-13;R(ctx,bx,by,3,12,c.boardCol);R(ctx,bx,by,1,12,'#1d1f24');R(ctx,bx+1,by+2,2,1,'#f4f1ea');R(ctx,bx+1,by+9,2,1,'#f4f1ea');}}}));
   if(G.co&&G.co.vis&&(G.co.map==='stock')===!onFloor)ents.push({y:G.co.y,f:drawCo});
@@ -1945,12 +1998,14 @@ function openMenu(selVal){
   const opts=[];
   if(inShift)opts.push({label:'Resume',value:'resume'});
   opts.push({label:'Music',right:music.on?'ON':'OFF',value:'music'});
+  opts.push({label:'Explicit dialogue',right:explicitOn?'ON':'OFF',value:'explicit'});
   if(inShift)opts.push({label:'Save game',value:'save'});
   opts.push({label:'Load game',value:'load'});
   if(inShift)opts.push({label:'Quit to all days',value:'quit'});
   if(fromOverlay)opts.push({label:'Close menu',value:'close'});
   openPicker({title:inShift?`Paused · Day ${G.level}: ${LV().name}`:'Menu',lines:inShift?[['Sales',`$${G.sales} / $${LV().target}`],['Clock',fmtClock(G.minute)]]:null,options:opts,sel:Math.max(0,opts.findIndex(o=>o.value===selVal)),onCancel:back,onPick:v=>{
     if(v==='music'){toggleMusic();ui=prev;openMenu('music');return;}
+    if(v==='explicit'){explicitOn=!explicitOn;try{localStorage.setItem('atlas-shift-explicit',explicitOn?'1':'0');}catch(_){}applyExplicit();ui=prev;openMenu('explicit');return;}
     if(v==='save')return openSave();
     if(v==='load'){if(fromOverlay)ui=prev;return openLoad();}
     if(v==='quit')return openPicker({title:'Quit this day?',prompt:'Anything since your last save is lost.',options:[{label:'Keep playing',value:0},{label:'Quit to all days',value:1}],
@@ -1959,6 +2014,41 @@ function openMenu(selVal){
   }});
 }
 $('menuBtn').addEventListener('click',()=>{ensureAudio();openMenu();});
+/* ---------- explicit dialogue (adult mode, on by default) ---------- */
+let explicitOn=true;try{explicitOn=localStorage.getItem('atlas-shift-explicit')!=='0';}catch(_){}
+const DLGX={
+  rude:["Bro, are you fucking kidding me? I've been standing here forever.","Yo, shop guy. Wake the fuck up.","Took your sweet-ass time.","This place is mid as hell, but whatever."],
+  weird:["I ate a whole edible before I came in. Is the floor supposed to breathe?","Do you sell grip that doesn't eat my shins? Asking for my shins.",
+    "I slammed so hard yesterday I saw God. He was wearing Vans.","My board smells like a gas station bathroom. Is that covered under warranty?",
+    "If I lick the griptape, does that count as fiber?","I'm not drunk, I'm aggressively hydrated. With beer."],
+  stories:["Got kicked out of the same parking structure so many times the guard knows my mom's name.","Bailed into a fountain filming last week. Phone survived. Dignity didn't.",
+    "Slammed on a handrail and racked myself so hard I spoke in tongues.","My buddy pissed in a bottle mid-session so we wouldn't lose the spot. Legend shit.",
+    "Brought a forty to the session, landed my first tre, puked in a planter. Best day of my life.","A cop rolled up on our DIY, looked at it and said 'that's sick.' Then he took it anyway. Asshole."],
+  hang:["Just killing time before the session. Everybody's still hungover.","Can I use your bathroom? It's an emergency. Like a real one.","I'm not loitering, I'm vibing aggressively.",
+    "My girl dumped me, so I'm just gonna stare at decks for an hour."],
+  browse:["Damn, these prices are robbery. Respectfully.","Just looking. I'm broke as shit.","I'm gonna pretend I can afford this deck for a minute. Let me have this."],
+  questions:[{q:"Real talk. Would you rather rack yourself on a rail or eat it face first?",a:["Rack it","Face first","Neither, I'm careful"],r:["Brave. Stupid, but brave.","Pretty face, ruined. Respect.","Liar."]},
+    {q:"Is skating hungover a skill or a cry for help?",a:["A skill","A cry for help","Both"],r:["Hell yeah it is.","Fair. I'll hydrate. Tomorrow.","The correct answer, sadly."]}],
+  thanks:{rude:["Whatever. Thanks, I guess.","Took long enough. Peace out, dickhead."],nice:["You're a fucking legend, thank you!"],chill:["Hell yeah. Appreciate you, man."],weird:["Thanks. I'm gonna go lick a curb now. Kidding. Maybe."]},
+  walk:{rude:"stormed out. \"This place is ass.\""},
+  danny:["I'm hungover as hell, but I'm here, boss.","If anyone asks, I've been working this whole time. Don't rat.","Real talk, the basement smells like feet and ambition."]
+};
+const CALLSX={any:["Yo, is anybody fucking working?","Did the employee die down there?","I swear to god if you're skating down there..."],rude:["This is some bullshit, man."]};
+const SPX={ray:["Back in '79 we didn't have helmets. Or brains, apparently.","I've been kicked out of better places than this. Not many, though.","Got any spare change? Kidding. Unless."],
+  carl:["Wax is a government psyop. Wake the hell up.","Birds aren't real and neither are skate stoppers. Fight me."]};
+DLG.danny=DLG.danny||[];
+const BASE_DLG=JSON.parse(JSON.stringify(DLG)),BASE_CALLS=JSON.parse(JSON.stringify(CALLS)),BASE_SP={};
+for(const k in SPX)BASE_SP[k]=SP[k].idle.slice();
+function applyExplicit(){
+  for(const k in DLGX){
+    const add=DLGX[k],base=BASE_DLG[k];
+    if(Array.isArray(add))DLG[k]=explicitOn?base.concat(add,add):base.slice();
+    else{DLG[k]=JSON.parse(JSON.stringify(base));if(explicitOn)for(const sk in add){DLG[k][sk]=Array.isArray(add[sk])?(base[sk]||[]).concat(add[sk],add[sk]):add[sk];}}
+  }
+  for(const k in CALLSX)CALLS[k]=explicitOn?BASE_CALLS[k].concat(CALLSX[k]):BASE_CALLS[k].slice();
+  for(const k in SPX)SP[k].idle=explicitOn?BASE_SP[k].concat(SPX[k],SPX[k]):BASE_SP[k].slice();
+}
+applyExplicit();
 G=freshState();
 renderTitle();
 const wrapEl=document.querySelector('.wrap'),screenEl=$('screen');
@@ -1967,8 +2057,9 @@ function fit(){
   let used=parseFloat(cs.paddingTop)+parseFloat(cs.paddingBottom),n=0;
   for(const el of wrapEl.children){if(el===screenEl||getComputedStyle(el).display==='none')continue;used+=el.offsetHeight;n++;}
   used+=gap*n;
-  const size=Math.max(180,Math.min(wrapEl.clientWidth,560,wrapEl.clientHeight-used));
-  screenEl.style.width=screenEl.style.height=Math.floor(size)+'px';
+  const size=Math.floor(Math.max(180,Math.min(document.documentElement.clientWidth,960,wrapEl.clientHeight-used)));
+  screenEl.style.width=screenEl.style.height=size+'px';
+  screenEl.style.margin='0';screenEl.style.marginLeft=Math.round((wrapEl.clientWidth-size)/2)+'px';
 }
 addEventListener('resize',fit);
 try{new ResizeObserver(fit).observe(document.querySelector('.tray'));}catch(_){}
