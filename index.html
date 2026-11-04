@@ -9,9 +9,6 @@
 <meta name="description" content="Atlas Shift: a pixel art skate shop retail game set at Atlas Skateboarding in San Mateo.">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' fill='%2315171c'/%3E%3Crect x='6' y='2' width='4' height='12' rx='2' fill='%2300aeef'/%3E%3Crect x='5' y='4' width='6' height='1' fill='%23f1ede4'/%3E%3Crect x='5' y='11' width='6' height='1' fill='%23f1ede4'/%3E%3C/svg%3E">
 <title>Atlas Shift</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Silkscreen:wght@400;700&display=swap">
 <style>
 *,*::before,*::after{box-sizing:border-box}
 html{height:100%;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);-webkit-text-size-adjust:100%}
@@ -19,6 +16,8 @@ body{margin:0;font:14px/1.4 system-ui,sans-serif}
 img{max-width:100%}
 </style>
 <style>
+@font-face{font-family:'AtlasPix';src:url(data:font/woff;base64,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) format('woff');font-display:block}
+@font-face{font-family:'AtlasUI';src:url(data:font/woff;base64,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) format('woff');font-display:block}
 /* Layout: one centered column — score strip, the shop screen, what you're holding, then the controller */
 :root{
   color-scheme: dark;
@@ -31,8 +30,8 @@ img{max-width:100%}
   --gold:#f2c14e;
   --bad:#ec5b52;
   --good:#4fc47f;
-  --pix:'Press Start 2P', ui-monospace, Menlo, monospace;
-  --ui:'Silkscreen', ui-monospace, Menlo, monospace;
+  --pix:'AtlasPix', ui-monospace, Menlo, monospace;
+  --ui:'AtlasUI', ui-monospace, Menlo, monospace;
 }
 html,body{height:100%}
 [hidden]{display:none!important}
@@ -940,8 +939,8 @@ function spawnLifter(){
 function lifterSteal(c){setTimeout(()=>{const co=G&&G.co;if(co&&co.vis&&co.map==='floor'&&['idle','back','chatting','toChat'].includes(co.state)&&Math.random()<.35+.5*coSkill())coDo('catch',true);},400);
 const k=randomItem(c.sec);if(G.stock)G.stock[c.sec]=Math.max(0,G.stock[c.sec]-1);
   c.stolen=k;c.state='steal';c.fast=1.35;c.stand=null;c.path=route(c.x,c.y,sideX(),SIDE_Y);
-  const nm=(c.lname||nameOf(c)).toLowerCase();if(!G.liftHelp){G.liftHelp=true;toast(`Hey! The ${nm} just pocketed something. Catch them before they leave! (talk to them)`,'bad');}
-  else toast(`Shoplifter! The ${nm} is heading for the door.`,'bad');}
+  const nm=c.lname||nameOf(c);if(!G.liftHelp){G.liftHelp=true;toast(`Hey! ${nm} just pocketed something. Catch them before they leave! (talk to them)`,'bad');}
+  else toast(`Shoplifter! ${nm} is heading for the door.`,'bad');}
 function catchLifter(c){const k=c.stolen;G.caught=(G.caught||0)+1;if(G.stock)G.stock[c.sec]=Math.min(STOCK_MAX,G.stock[c.sec]+1);
   c.stolen=null;c.fast=1.2;leave(c,'x');G.stars.push(5);sfx.cash();
   say([{who:c.lname||nameOf(c),text:pick(["Aight, aight. My bad. I was gonna pay. Eventually.","Damn, you're fast for a shop guy. Here, take it.","This is entrapment. Also here's your "+ITEMS[k].label.toLowerCase()+"."])}]);
@@ -980,7 +979,12 @@ function spawnCustomer(forced){
   if(G.map!=='floor')toast('A customer just walked in upstairs.');
   return c;
 }
-const nameOf=c=>c.special&&SP[c.special]?SP[c.special].name:`${c.look.color} shirt`;
+const NAMES=['Marisol','Kenji','Andre','Dante','Priya','Nico','Jalen','Tasha','Luis','Mateo','Sione','Kai','Jordan','Bianca','Hector','Tevita','Malia','Rafael','Darnell','Ana',
+  'Tyler','Vanessa','Jasmine','Diego','Miguel','Elena','Trinh','Jun','Ikaika','Leilani','Omar','Yusuf','Ravi','Sam','Alex','Jojo','Benny','Deshawn','Kiana','Rosa','Paolo','Emilio',
+  'Carlos','Nadia','Mei','Kevin','Brian','Trevor','Gabe','Izzy','Max','Theo','Zoe','Lily','Big Mike','Lil Mike','Tall Steve','Quinn','Reggie','Manny','Noelani','Tino','Cruz',
+  'Ellie','Marcus Jr','Pablo','Lani','Wes','Toby','Ronnie','Desi','Frankie','Kobe','Ramon','Isaiah','Aaliyah','Chris','Hana','Junior','Ollie','Rocco','Vince'];
+function nameOf(c){if(c.special&&SP[c.special])return SP[c.special].name;
+  if(!c.name){const used=G?G.customers.map(o=>o.name):[];c.name=pick(NAMES.filter(n=>!used.includes(n)))||pick(NAMES);}return c.name;}
 function stillNeeds(c){const g=c.got.slice();return c.req.filter(k=>{const i=g.indexOf(k);if(i>=0){g.splice(i,1);return false;}return true;});}
 const slotX=i=>colX(Math.min(1+i,4));
 function joinQueue(c){
@@ -1231,8 +1235,8 @@ function updateCo(dt){
         const need=stillNeeds(cu),empty=G.stock?need.find(k=>G.stock[ITEMS[k].section]<=0):null;
         if(empty)toast(`Danny: "The ${SECTIONS[ITEMS[empty].section]} is empty. Somebody has to restock it."`,'bad');
         else{if(G.stock)need.forEach(k=>{const s3=ITEMS[k].section;G.stock[s3]=Math.max(0,G.stock[s3]-1);});cu.got=cu.req.slice();cu.asked=true;cu.mood='<3';cu.moodT=1.4;joinQueue(cu);
-          G.coHelps=(G.coHelps||0)+1;toast(`Danny helped the ${nameOf(cu).toLowerCase()}. They're heading to the register.`,'good');}}
-      if(c.keepHelp&&coBusy()){const w2=coWaiting().find(o=>o.id!==c.cid);if(w2){const sp=w2.talk||w2.stand;c.cid=w2.id;c.state='toHelp';c.path=coRouteFrom(c.x,c.y,colX(sp[0]),rowY(sp[1]));toast(`Danny: "Still busy. I'll grab the ${nameOf(w2).toLowerCase()} too."`);break;}}
+          G.coHelps=(G.coHelps||0)+1;toast(`Danny helped ${nameOf(cu)}. They're heading to the register.`,'good');}}
+      if(c.keepHelp&&coBusy()){const w2=coWaiting().find(o=>o.id!==c.cid);if(w2){const sp=w2.talk||w2.stand;c.cid=w2.id;c.state='toHelp';c.path=coRouteFrom(c.x,c.y,colX(sp[0]),rowY(sp[1]));toast(`Danny: "Still busy. I'll grab ${nameOf(w2)} too."`);break;}}
       c.keepHelp=false;c.state='back';c.path=coRouteFrom(c.x,c.y,...CO_HOME());break;}
     case 'toDis':if(coMove(dt)){if(c.dis==='skate'){c.map='stock';c.x=colX(2);c.y=rowY(4);}c.state='dis';c.dir='down';}break;
     case 'dis':c.disT+=dt;
@@ -1268,7 +1272,7 @@ function coOrder(v){
     const w=G.customers.filter(o=>o.state==='wait'&&!o.path.length&&!o.release).sort((a,b)=>a.patience-b.patience)[0];
     if(!w){toast('Danny: "Nobody is waiting right now."');c.state='back';c.path=coRouteFrom(c.x,c.y,...CO_HOME());return;}
     const spot=w.talk||w.stand;c.cid=w.id;c.state='toHelp';c.keepHelp=true;c.path=coRouteFrom(c.x,c.y,colX(spot[0]),rowY(spot[1]));
-    toast(`Danny: "I got the ${nameOf(w).toLowerCase()}."`);
+    toast(`Danny: "I got ${nameOf(w)}."`);
   }else if(v==='chill'){startDistract(true);toast('Danny: "Sweet. Five minutes, tops."');}
   else if(['deliver','clean','chat','post','phone','web','catch'].includes(v))coDo(v);
   else{c.state='back';c.path=coRouteFrom(c.x,c.y,...CO_HOME());}
@@ -1442,7 +1446,7 @@ function target(){
     if((G.dbox||(G.delivery&&G.delivery.boxes.length))&&p.dir!=='up'&&(ptc===9||ptc===10)&&ptr===2){if(!G.delivery)G.delivery={boxes:[],c:10,r:2};return {kind:'pile'};}}
   if(G.map==='floor'&&p.dir!=='up'&&p.y<3*T+6&&p.y>T&&p.x<3*T+4){const pc=Math.floor(p.x/T);
     if(p.dir==='left'&&pc<=1)return {kind:'tile',ch:'g',tc:0,tr:3};
-    if(pc===2&&p.dir==='down'&&(G.release||(G.web&&G.web.open.length)))return {kind:'tile',ch:'M',tc:2,tr:3};
+    if(pc===2&&p.dir==='down'&&(G.release||(G.web&&G.web.open.length)||holdOpts().length))return {kind:'tile',ch:'M',tc:2,tr:3};
     if(pc<=2)return {kind:'tile',ch:'R',tc:1,tr:3};}
   if(G.co&&G.co.vis&&G.co.map===G.map){const c=G.co,vx=c.x-cx,vy=(c.y-4)-cy,dist=Math.hypot(vx,vy),reach=c.dis==='skate'?40:22;
     if(dist<reach&&(vx*fx+vy*fy>2||dist<10))return {kind:'co'};}
@@ -1474,7 +1478,7 @@ function hintFor(t){
   if(ch==='R')return 'A · Register';
   if(ch==='B')return t.tc===1?'A · Music & web orders':'A · Grip bench';
   if(ch==='K')return 'A · Stock room';
-  if(ch==='M')return G.release?'A · Release boxes':G.web&&G.web.open.length?'A · Box web order':'A · Desk';
+  if(ch==='M')return holdOpts().length?'A · Put on hold':G.release?'A · Release boxes':G.web&&G.web.open.length?'A · Box web order':'A · Desk';
   if(ch==='g')return G.phone&&G.phone.ring>0?'A · Answer phone':'A · Phone';
   if(ch==='V')return 'A · TV';
   if(ch==='U')return 'A · Fitting room';
@@ -1546,12 +1550,17 @@ function packOrder(){const W=web();
   o.items.forEach(k=>G.hands.splice(G.hands.indexOf(k),1));W.open=W.open.filter(x=>x!==o);
   const total=o.items.reduce((a,k)=>a+ITEMS[k].price,0);G.sales+=total;G.packages=(G.packages||0)+1;G.webDone=(G.webDone||0)+1;sfx.cash();
   toast(`Boxed order #${o.id} for ${o.name}. +$${total}. It's behind the register for the post office.`,'good');}
+function holdOpts(){const H=(G.holds||[]).filter(h=>!h.shelved&&G.hands.includes(h.item));return H.map(h=>({label:`Put ${ITEMS[h.item].label} on hold`,right:h.name,value:'hold:'+h.id}));}
+function doHold(v){const h=(G.holds||[]).find(x=>'hold:'+x.id===v);if(!h)return false;const i=G.hands.indexOf(h.item);if(i<0)return false;G.hands.splice(i,1);h.shelved=true;sfx.grab();toast(`${ITEMS[h.item].label} is on the hold shelf for ${h.name}.`,'good');return true;}
 function deskAction(){const W=web();
+  if(holdOpts().length&&!G.release){return openPicker({title:'Desk',options:holdOpts().concat(W.open.length?[{label:'Box a web order',right:`${W.open.length} open`,value:'web'}]:[]).concat([{label:'Never mind',right:'',value:null}]),
+    onPick:v=>{if(!v)return;if(v==='web')return packOrder();doHold(v);}});}
   if(G.release){const st=G.release.stash;
     const opts=G.hands.filter(h=>ITEMS[h].section==='release').map(h=>({label:'Put back size '+h.split('-')[1],right:'',value:'back:'+h})).concat(Object.keys(st).map(sz=>({label:`Size ${sz}`,right:`${st[sz]} left`,value:sz})));
     if(W.open.length)opts.push({label:'Box a web order',right:`${W.open.length} open`,value:'web'});
+    opts.unshift(...holdOpts());
     opts.push({label:'Never mind',right:'',value:null});
-    return openPicker({title:'Release · '+REL.name,options:opts,onPick:sz=>{if(!sz)return;if(sz==='web')return packOrder();
+    return openPicker({title:'Release · '+REL.name,options:opts,onPick:sz=>{if(!sz)return;if(sz==='web')return packOrder();if(sz.startsWith('hold:'))return doHold(sz);
       if(sz.startsWith('back:')){const h=sz.slice(5),z=h.split('-')[1];G.hands.splice(G.hands.indexOf(h),1);st[z]++;blip(400,.08,'square',.04,-120);return toast(`Put size ${z} back.`);}
       if(st[sz]<=0)return toast(`No size ${sz} left.`,'bad');
       if(G.box||G.dbox)return toast('Put the box down first.','bad');
@@ -1599,7 +1608,14 @@ function phoneAction(){const ph=G.phone||(G.phone={ring:0,t:40});
   if(!(ph.ring>0)){const L=['The cord is tangled in a way that feels intentional.','A sticky note on it says "DO NOT ANSWER IF IT IS GARY."','No missed calls. You check anyway.'];
     if(G.drink&&!G.release)L.push('Your iced coffee is sweating next to the phone. Still cold. Nice.','Someone drew a skull on your cup. Probably the manager.');
     return say([{who:'Shop phone',text:pick(L)}]);}
-  ph.ring=0;ph.t=55+Math.random()*55;sfx.talk();const c=pick(explicitOn?PHONE.concat(PHONEX):PHONE);
+  ph.ring=0;ph.t=55+Math.random()*55;sfx.talk();
+  if(G.level>=2&&!G.closed&&(G.holds||[]).length<2&&Math.random()<.3){const k=randomItem(pick(Object.keys(SECTIONS))),nm=pick(NAMES),eta=pick(['an hour','like 45 minutes','after work','a bit']);
+    return say([{who:'You',text:'Atlas Skateboarding, what\'s up?'},{who:nm,text:pick([`Hey, can you put ${ITEMS[k].phrase} on hold for me? Name's ${nm}. I'll be there in ${eta}.`,`Yo, could you hold ${ITEMS[k].phrase} under ${nm}? Coming by in ${eta}.`,`Hi! Can you set aside ${ITEMS[k].phrase} for me? It's ${nm}.`])}],
+      ()=>openPicker({title:'Put it on hold?',options:[{label:'Sure, it\'s on hold',value:1},{label:'Sorry, no holds',value:0}],noCancel:true,onPick:v=>{
+        if(v){(G.holds=G.holds||[]).push({id:(G.holdN=(G.holdN||0)+1),item:k,name:nm,shelved:false,t:70+Math.random()*60});say([{who:nm,text:pick(['Sick, thank you! See you soon.','You\'re a legend. On my way.','Bet. Don\'t sell it to anybody else.'])}]);
+          toast(`Hold for ${nm}: grab ${ITEMS[k].label} and put it on hold at the desk by the register.`);}
+        else say([{who:nm,text:pick(['Damn. Okay, I\'ll just pray it\'s there.','Fair. I\'ll race over then.'])}]);}}));}
+  const c=pick(explicitOn?PHONE.concat(PHONEX):PHONE);
   say([{who:'You',text:'Atlas Skateboarding, what\'s up?'},{who:c.who,text:c.q}],()=>openPicker({title:'Your answer',options:c.a.map((a,i)=>({label:a,value:i})),noCancel:true,
     onPick:i=>say([{who:c.who,text:c.r[i]}])}));
 }
@@ -1856,6 +1872,7 @@ function todoList(){const L=[],pl=(n,a,b)=>n===1?a:b,co=G.co,add=(c,label,pendin
   if(G.stock){const low=Object.keys(SECTIONS).filter(k=>G.stock[k]<=2),out=low.some(k=>G.stock[k]<=0);
     add(out?'#ec5b52':'#f2c14e',low.length?'Restock '+low.map(k=>SHORT[k]).join(', '):'Restock',low.length,out,say2('Grab a box from the tagged shelf in the stock room.'));
     const d=(G.delivery?G.delivery.boxes.length:0)+(G.dbox?1:0);add('#b98c58',d?`Stock ${d} UPS`:'UPS boxes',d,0,say2('UPS boxes go on the shelf that matches their tag.'));}
+  const hn=(G.holds||[]).filter(h=>!h.shelved).length;if(G.level>=2)add('#9aa1ad',hn?`Put ${hn} on hold`:'Holds',hn,0,say2('Grab the item, then use the desk by the register.'));
   const m=(G.messes||[]).length;add('#9aa1ad',m?`Clean ${m} ${pl(m,'mess','messes')}`:'Clean up',m,m>1,say2('Walk over a mess and press A.'));
   if(G.hands.length&&!G.customers.some(c=>c.state==='wait'))add('#9aa1ad','Put items back',1,0,say2('Face the shelf the item came from and press A.'));
   if(co){const busy=co.state==='toPost'||co.state==='post',slack=co.state==='dis'&&!co.ok;
@@ -1885,7 +1902,7 @@ $('todo').parentNode.addEventListener('click',()=>showFull('todo'));
 function updateHud(){
   const avg=G.stars.length?(G.stars.reduce((a,b)=>a+b,0)/G.stars.length):0;
   const hands=G.hands.join('|')+'|'+(G.box||'')+'|'+JSON.stringify(G.stock)+'|'+(G.co?G.co.state+G.co.dis+G.co.sec:'');
-  const tk=G.customers.filter(c=>c.state!=='leave'&&(c.asked||c.state==='queue')).map(c=>c.id+c.state+c.got.length).join('|')+'|w'+(G.web?G.web.open.map(o=>o.id).join(','):'');
+  const tk=G.customers.filter(c=>c.state!=='leave'&&(c.asked||c.state==='queue')).map(c=>c.id+c.state+c.got.length).join('|')+'|w'+(G.web?G.web.open.map(o=>o.id).join(','):'')+'|h'+(G.holds||[]).map(h=>h.id+(h.shelved?'s':'')).join(',');
   const todo=todoList();
   const key=[fmtClock(G.minute),G.sales,avg.toFixed(1),hands,tk,todo.map(t=>t.label+t.pending+t.hot).join('/')].join('#');
   if(key===lastHud)return;lastHud=key;
@@ -1906,6 +1923,7 @@ function updateHud(){
     else{const g=c.got.slice();body=c.req.map(k=>{const i=g.indexOf(k);if(i>=0){g.splice(i,1);return `<s>${ITEMS[k].label}</s>`;}return ITEMS[k].label;}).join(', ');}
     return `<div class="tk"><span class="dot" style="background:${c.look.shirt}"></span><span>${body}</span></div>`;
   });
+  (G.holds||[]).forEach(h=>rows.unshift(`<div class="tk"><span class="dot" style="background:#9aa1ad"></span><span><em>Hold · ${h.name}</em> ${h.shelved?'<s>'+ITEMS[h.item].label+'</s> ready':ITEMS[h.item].label}</span></div>`));
   if(G.web)G.web.open.forEach(o=>rows.unshift(`<div class="tk"><span class="dot" style="background:#f2c14e"></span><span><em>Web #${o.id}${o.danny?' · Danny':''}</em> ${o.items.map(k=>ITEMS[k].label).join(', ')}</span></div>`));
   G._tkFull=G.customers.filter(c=>c.state!=='leave'&&(c.asked||c.state==='queue')).map(c=>{const nm=nameOf(c);
     if(c.state==='queue')return [c.look.shirt,nm,c.release&&!c.got.length?`${REL.name} size ${c.size}`:'Ready to pay at the register'];
@@ -1952,6 +1970,10 @@ function update(dt){
     if(ph.ring>0){ph.ring-=dt;ph.bt=(ph.bt||0)-dt;if(ph.bt<=0){ph.bt=1.6;for(let k=0;k<6;k++)setTimeout(()=>blip(k%2?1180:1480,.07,'sine',.022),k*75);}
       if(ph.ring<=0){ph.ring=0;ph.t=50+Math.random()*50;toast('Missed the call. Eh, they\'ll call back.');}}
     else if(!G.closed){ph.t-=dt;if(ph.t<=0){ph.ring=10;ph.bt=0;toast('The phone is ringing. Left of the register.');}}}
+  for(const h of (G.holds||[]).slice()){h.t-=dt;if(h.t>0||G.closed)continue;G.holds=G.holds.filter(x=>x!==h);
+    const c=spawnCustomer({req:[h.item],text:`Hey, I called about a hold? Name's ${h.name}. ${ITEMS[h.item].label}.`});if(!c)continue;c.name=h.name;c.kind='buyer';
+    if(h.shelved){c.got=[h.item];c.asked=true;c.hold=true;joinQueue(c);toast(`${h.name} is here to pick up their hold. Ring them up.`,'good');}
+    else{c.patience=70;toast(`${h.name} came for a hold that isn't ready! Grab ${ITEMS[h.item].label}.`,'bad');}}
   if(G.level>=3&&!G.closed){const W=web();W.t-=dt;if(W.t<=0){W.t=70+Math.random()*50;
     if(W.inbox+W.open.length<2){W.inbox++;blip(1500,.06,'triangle',.04);setTimeout(()=>blip(1800,.08,'triangle',.04),90);toast('Ding! New web order at the printer by the music.','good');}}}
   if(G.stock&&!G.closed&&!G.upsDone){if(G.upsAt==null)G.upsAt=60+Math.random()*100;if(G.minute>=G.upsAt){G.upsDone=true;
@@ -2386,8 +2408,17 @@ function readUnlocked(){try{return Math.max(1,Math.min(LEVELS.length,+localStora
 function writeUnlocked(v){try{localStorage.setItem('atlas-shift-unlocked',String(v));}catch(_){}}
 function readDev(){try{return localStorage.getItem('atlas-shift-dev')==='1';}catch(_){return false;}}
 function writeDev(v){try{localStorage.setItem('atlas-shift-dev',v?'1':'0');}catch(_){}}
-const GAME_VERSION='v64';
+const GAME_VERSION='v67';
+function ageOK(){try{return localStorage.getItem('atlas-shift-age');}catch(_){return null;}}
+function renderAgeGate(){
+  overlay.innerHTML=`<h2>18<span>+</span></h2><p>Strong language, drinking and smoking.</p>
+    <div class="levels"><button class="go" id="age18">I'M 18+ · ENTER</button><button class="go alt" id="ageClean">PLAY CLEAN VERSION</button></div>`;
+  overlay.hidden=false;ui='title';
+  $('age18').addEventListener('click',()=>{try{localStorage.setItem('atlas-shift-age','18')}catch(_){}explicitOn=true;try{localStorage.setItem('atlas-shift-explicit','1')}catch(_){}applyExplicit();renderTitle();});
+  $('ageClean').addEventListener('click',()=>{try{localStorage.setItem('atlas-shift-age','clean')}catch(_){}explicitOn=false;try{localStorage.setItem('atlas-shift-explicit','0')}catch(_){}applyExplicit();renderTitle();});
+}
 function renderTitle(){
+  if(!ageOK())return renderAgeGate();
   const dev=readDev(),un=dev?LEVELS.length:readUnlocked();
   overlay.innerHTML=`<h2>ATLAS <span>SHIFT</span></h2><p>Work the floor at Atlas, 209 2nd Ave. Hit the sales goal, or make it to 7 PM with 3 stars, to unlock the next day.</p>
     <div class="levels">${LEVELS.map(L=>`<button class="lv" data-l="${L.n}"${L.n>un?' disabled':''}><b>DAY ${L.n}</b><span>${L.name}</span><small>${L.n>un?'Locked':`Goal $${L.target} · ${L.goal}`}</small></button>`).join('')}</div>
@@ -2784,6 +2815,140 @@ DLGX.hang=(DLGX.hang||[]).concat(["Skate and destroy, man. Mostly destroy. My an
 PHONEX.push({who:'Caller',q:"Can you take the grip off my deck? My ex wrote her name under it and I'm fucking over it.",a:["Bring it in","Just regrip over it"],r:["Bless you. Fresh start, fresh grip.","Bury her under new grip. Poetic."]},
  {who:'Caller',q:"Bro, I need grip tape that says SKATE AND DESTROY in huge letters. My mom is gonna hate it. Perfect.",a:["We can do that","Ask your mom first"],r:["Fuck yeah. Rebellion.","...She said no. Damn it."]},
  {who:'Caller',q:"Real talk, does a Hall of Meat slam count as cardio?",a:["Totally","Go to a doctor"],r:["Knew it. Skipping the gym forever.","My doctor said the same shit, man."]});
+/* ---------- dialogue pack 3: skate culture + Bay Area staples ---------- */
+DLG.nice.push("Yo, this shop is my favorite stop between Caltrain and the park.","I tell everybody in the city to BART down here for boards. Worth it.","Love this place. Smells like grip tape and fresh Philz.",
+  "First time in! My buddy from Daly City said you guys are the real deal.","Hey! I got my first board here when I was like nine.","Shop looks sick today. New art on the wall?",
+  "You guys sponsored the jam at Central Park, right? That was hella fun.","Just came from Pacifica. Surf was flat, so skating it is.","Good vibes in here, man. Always.",
+  "I biked over from Belmont just to come here. Real ones only.","Atlas forever. My older brother used to work here.","Hey! I saw your shop video on the TV at the burrito spot.",
+  "Respect for keeping a real core shop open. Hella rare now.","I'm visiting from Sacramento. Heard this place was legit.","Yo, good to see you. Fog's thick today, huh?",
+  "Just got off the 292 bus. Long ride, worth it.","Love the deck wall. I could stare at it all day.","I'm trying to support local shops, not the mall. Help me out.",
+  "Happy Go Skate Day, a little early. I'm celebrating all month.","You guys always have the best music playing in here.","Hey! I finally landed my first kickflip. Had to tell somebody.",
+  "Just got back from skating Coyote Point. Wind almost blew me into the bay.","I'm from the East Bay but this is my shop. Don't tell Oakland.","This place is a San Mateo staple, for real.","Hi! My mom is double parked so I gotta be quick-ish.");
+DLG.rude.push("Bro, I could've taken BART to the city and back by now.","The fog moves faster than this line.","Yo, it's not that deep. Just grab the thing.",
+  "I've been waiting longer than a Muni bus at midnight.","Hurry up, my parking meter on B Street is about to run out.","Can we speed this up? The session's starting at the park.",
+  "I'm hella late already, man.","Is this a skate shop or a DMV?","My homie bought the same thing online in like two clicks. Just saying.",
+  "Bro, I'm double parked on 2nd Ave. Move.","I didn't take Caltrain for this level of service.","You guys need more people working. For real.",
+  "Hello? I'm literally right here.","I have a filming session at 4. Let's go.","I didn't come here to watch you vibe to music.",
+  "Can I get some service before the sun goes down?","I'm about to just go to the city instead.","This line is longer than the Bay Bridge traffic.",
+  "Bruh. Today. Please.","My wheels have worn down faster than this.");
+DLG.chill.push("No rush. I'm hella chill today.","Take your time, I'm just lurking.","All good. I'm waiting on my homie anyway, he's always late.",
+  "Whenever, man. I'm off work.","No stress. The fog isn't going anywhere either.","I'm just here to stare at boards. Help whoever.",
+  "Take your time, I got a burrito to finish.","Vibes are good, no hurry.","I'll be around. Just watching the video on the TV.",
+  "Whenever you're free. I'm in no rush to get back to Daly City.","It's cool, I'm early for once.","No worries, I'm on Caltrain time.",
+  "I'll be here. Gonna re-read this Thrasher.","Easy, dude. Help the grom first.","All good, man. Still recovering from yesterday's session.");
+DLG.weird.push("Do you sell wax that smells like sourdough? Asking for San Francisco.","I only skate when Karl the Fog is out. He's my spirit animal.",
+  "I named all my wheels after Giants pitchers.","Is it true Hubba Hideout is haunted? I heard a board screaming.","I lick my grip tape for good luck. Is that a problem?",
+  "Can I trade you an It's-It for a deck? It's mint chocolate.","I think my board is mad at me. It keeps leaving.","Do you guys sell skateboards for dogs? Mine has style.",
+  "I've been skating the same curb since 2014. We're in a relationship.","I only ride switch on Wednesdays. It's a whole thing.","Do you have trucks that turn left only? I only go left.",
+  "My chiropractor said no more skating. So I got a new chiropractor.","Is the Bay Bridge skateable? Hypothetically. For a part.","I saw a seagull do a no-comply at Pier 39. I swear.",
+  "Can you put a 50-50 on layaway?","I keep my board in the fridge so it stays fresh.","My wheels are so soft I can feel my feelings.",
+  "Do you think sea lions would be good at skating? They have the balance.","I tried to wallride a Muni bus. It did not go well.","Can I buy just the sound a board makes when it pops?",
+  "I'm only here because the burrito place had a line.","My grandma rides a cruiser in Daly City. She's faster than me.","Do you sell grip in Warriors blue and gold? I need to rep.",
+  "I bring my board to Giants games. Just in case.","Is it weird that I skate in Crocs? Sport mode, obviously.","I've been dreaming in fisheye lens lately.",
+  "Can you tell me if my pop is good by listening?","I once ollied a garlic fry at the ballpark. Changed my life.","Do skateboards dream of electric sheep? I'm asking seriously.",
+  "Is it bad luck to skate a board with a fortune cookie fortune stuck to it?","I collect broken boards like trophies. My room is a graveyard.","Do you have a wheel that makes you invisible to security?",
+  "I want my deck to smell like Philz Mint Mojito.","I tried to skate the Lombard Street turns. Tourists cheered, then I cried.","Do you think the Golden Gate is jealous of the Bay Bridge?");
+DLG.stories.push("Skated Embarcadero at sunrise once. No security, no tourists, just pigeons. Spiritual.","Hill bombed Twin Peaks with my cousin. He's still in therapy. Me too, honestly.",
+  "Got kicked out of the Wallenberg spot so fast the security guard didn't even put his coffee down.","We sessioned the Potrero DIY till the cops came. Then we sessioned the cops' patience.",
+  "I tried Pier 7 for the first time and got humbled by the ledges and the wind.","My homie bailed down Dolores hill and slid into a picnic. They gave him a sandwich.",
+  "Rode BART with my board and the whole car watched me eat it at Embarcadero station.","Filmed a line in SoMa, landed it, then realized the filmer was on his phone.",
+  "Got a burrito at El Farolito at 2 AM after a session. Best night of my life.","Skated the Fort Miley ditch once. Fell in. Climbed out wiser.",
+  "Tried to skate Black Rock in Golden Gate Park. Got lost. Found a bison. Not joking.","Our crew took Caltrain to Palo Alto just to skate one ledge. Totally worth it.",
+  "I got my first Thrasher subscription when I was ten. My mom thought it was a metal magazine.","Watched a full shop video premiere at a bar in the Mission. Everybody screamed at every trick.",
+  "My friend kickflipped a trash can on Haight Street. A hippie gave him a high five and a crystal.","Skated the Shoreview park bowl in the rain once. Bad idea. Great slam.",
+  "We used to skate the Central Park ledges until they put knobs on them. Rest in peace.","I went to a Death Match out of town once. Came back with no voice and two new friends.",
+  "Got my board signed by a pro at a demo. Then I snapped it the next day. Kept the pieces.","I did my first drop-in at the Belmont skatepark. My knees still remember it.",
+  "My crew filmed a whole part on a VX1000 we found at a garage sale. Tapes and everything.","Bombed a hill in Daly City and the fog was so thick I couldn't see the bottom. Trust the process.",
+  "Hit a crack at Coyote Point, flew into a bush, a goose attacked me. Hall of Meat material.","Skated the Bay to Breakers route on a board. Got passed by a guy in a salmon costume.",
+  "We built a manual pad out of a Home Depot door. Landlord was not hyped.","Learned to boardslide on a parking block behind the Safeway. It's still there. It's family now.",
+  "My homie did a no-comply over a sleeping cat at Dolores. The cat didn't wake up.","Got a ticket for skating in Downtown Palo Alto. Framed it.",
+  "We drove to Santa Cruz for the pool, got there, it was full of water. Skated the parking lot instead.","First time at Hubba Hideout I just sat and watched. Felt like church.",
+  "I got the shop to fix my trucks before Go Skate Day. Skated twelve hours straight.","My homie tried to slappy a Muni curb and the bus driver honked in rhythm. Legend.",
+  "Skated from the Ferry Building to the Giants stadium during a game. Garlic fries the whole way.","We had a session in a parking garage in Redwood City until security started filming us. He was good.",
+  "I broke my wrist learning to skate and my cast was covered in stickers from this shop.");
+DLG.hang.push("Just waiting for the fog to burn off so we can go skate.","My crew is meeting here before we hit the park.","I'm just lurking. Standard procedure.",
+  "Waiting on my filmer. He's always late. Filmer things.","Don't mind me, I'm just watching the shop video again.","We're deciding between Shoreview and the city. Big decisions.",
+  "Just here for the AC. And the vibes.","My boy's buying bearings. I'm emotional support.","We're taking Caltrain up to the city in like an hour.",
+  "Gotta wait for my ride from Foster City.","Just warming up my ankles before the session.","I'm here every day. Basically a fixture.",
+  "Waiting for the new mag to drop. They said today.","We just came from a burrito spot. Food coma.","Just chilling. Skating later if my knee says yes.",
+  "My homie's buying his first real setup. I'm here for the moment.","Charging my phone. I mean, hanging out.","We're planning a hill bomb route. Don't tell anyone.",
+  "Waiting on the bus to San Bruno.","I'm just here to hear the music. This beat slaps.","My cousin works across the street. I'm killing time.",
+  "We're arguing about who has the best part this year. It's getting heated.","Resting. Skated Pier 7 this morning. Legs are noodles.","Just looking at the window display. Very artistic.",
+  "Waiting for the session at the park. Somebody's bringing a rail.");
+DLG.browse.push("Just seeing what's new. My bank account says browse only.","I'm building a dream setup in my head. It's beautiful.","These graphics are hella clean.",
+  "Is that a new shop deck? I need it. Spiritually.","Just looking. Comparing prices in my head to what I make at Boba Guys.","Ooh, new colorways.",
+  "Checking the hardware. Gotta get my trucks right.","Just looking for my next board. Commitment issues.","The wheels in the case are calling my name.",
+  "Is that a reissue? My uncle had that one.","I come in here every week just to look at the decks.","Just browsing. My birthday is soon. Strategic.",
+  "Looking for a gift for my little brother. He wants everything.","Just checking sizes. My feet keep growing.","I like the art more than I like skating, honestly.",
+  "This hoodie would look hella good with fog.","Just looking at the mags. Might buy one. Might just read it.","These shoes look like they'd survive Pier 7.",
+  "I'm deciding between a deck and a burrito budget for the week.","Just taking pics to send to the group chat.","I need a new board but my old one has sentimental value. And a crack.",
+  "Looking at socks. Don't judge.","I want everything on this wall.","Is that a limited one? It's calling to me.","Just window shopping. Inside the window.");
+DLG.questions.push(
+  {q:"Who's got the best part in Bay Area history? Go.",a:["Somebody from the EMB days","Whoever skated Hubba","My homie's iPhone part"],r:["The EMB era. Legendary. No debate.","Hubba is sacred ground.","Respect. Local legends count."]},
+  {q:"Best burrito in the Bay? This decides if I trust you.",a:["El Farolito","La Taqueria","Whatever's open at 2 AM"],r:["Correct. The super. Always.","Respect. No rice. Purist.","Honestly the realest answer."]},
+  {q:"Philz or Peet's before a session?",a:["Philz","Peet's","Neither, just Red Bull"],r:["Mint Mojito gang.","Classic. Old Bay energy.","Your heart rate is concerning."]},
+  {q:"Hill bomb Twin Peaks: legend move or bad idea?",a:["Legend move","Bad idea","Both"],r:["Send it.","Sensible. Boring, but sensible.","That's the honest answer."]},
+  {q:"Pier 7 or Embarcadero for a session?",a:["Pier 7","EMB","Shoreview, stay local"],r:["The ledges. Classic.","History. Respect.","Real one. San Mateo pride."]},
+  {q:"Is Karl the Fog good or bad for skating?",a:["Good, keeps me cool","Bad, wet ground","Karl is family"],r:["True. Free AC.","Wet grip is a nightmare.","Karl would be proud."]},
+  {q:"Giants or A's? Choose carefully.",a:["Giants","A's","I only watch skate videos"],r:["Orange and black. Respect.","Real Oakland energy.","Honestly the healthiest choice."]},
+  {q:"Should I learn switch or nollie first?",a:["Switch","Nollie","Neither, learn to fall"],r:["Smart. Opens up everything.","Front foot power. Let's go.","Falling is the most important trick. True."]},
+  {q:"VX1000 or iPhone for filming?",a:["VX1000","iPhone","Whatever my homie has"],r:["Fisheye forever.","Modern. Practical. Fair.","The filmer decides. Always."]},
+  {q:"Is it a real session if nobody films it?",a:["Yes","No","Only if someone slams"],r:["Pure skating. Respect.","Pics or it didn't happen.","Slams make the memories."]},
+  {q:"Best Bay Area food after skating?",a:["It's-It","Garlic fries","A whole burrito"],r:["The OG. Frozen excellence.","Ballpark classic.","Recovery fuel."]},
+  {q:"Is BART good for skaters?",a:["Yes, ride everywhere","No, too crowded","Only after midnight"],r:["Board on the train, let's go.","True. Elbows everywhere.","That's when the real ones ride."]},
+  {q:"Should I skate the rail or the ledge first?",a:["Ledge","Rail","The curb, start humble"],r:["Warm up right. Smart.","Brave. Pads on?","Humble beginnings."]},
+  {q:"Is slappy grinding a real trick?",a:["Absolutely","Kind of","Only on curbs"],r:["Respect the slappy.","It's a vibe trick. Fair.","Curbs are the whole point."]},
+  {q:"Shoe Goo or new shoes?",a:["Shoe Goo","New shoes","Duct tape"],r:["Budget king.","Treat yourself.","Ghetto engineering. Respect."]});
+DLG.thanks.nice.push("Thanks! See you at the park.","Appreciate you! Atlas forever.","Thanks, I'll tell the whole crew.","You're the best. Going straight to Shoreview.","Hella thanks!");
+DLG.thanks.chill.push("Right on, thanks man.","Good looking out.","Appreciate it, homie.","Thanks. Back to the session.","Respect. See you around.");
+DLG.thanks.rude.push("Took forever, but okay.","Fine. Thanks or whatever.","Next time be faster.");
+CO_CHAT.push("You going to the jam at Central Park this weekend?","My filmer lost the footage. Again. Three months of clips.","If you're in the city, Pier 7 is skating good right now.",
+  "We should do a shop trip to the Potrero DIY.","I've been learning slappies on the curb out front.","Somebody left a Philz cup in the basement. It's been there a week.",
+  "I'm saving up for a VX1000. Don't tell my landlord.","The fog was so thick this morning I skated into a parked car.","You know who has the best part this year? Me. In my head.",
+  "If you see a guy in a wizard robe outside, that's my cousin.","I hit a pebble on 3rd Ave and flew like six feet. Hall of Meat.","We're doing a burrito run after close if you're in.",
+  "Shoe Goo is a lifestyle, not a product.","Go Skate Day is basically Christmas for us.","Somebody tried to sell me a skateboard NFT. I said no.",
+  "Caltrain was packed. I stood next to a guy with a surfboard the whole way.","My trucks are so loose I almost died on the ramp. Worth it.","I watched the new video part seven times last night.",
+  "I'm thinking of learning to film. Got a fisheye for my phone.","My homie said he'd pay me in It's-Its for helping him move. Deal.");
+KID_LINES.push("We're gonna be SOTY. All of us. At the same time.","My big brother skated Embarcadero. Once. He talks about it every day.","Can we watch the video on the TV? Please?",
+  "We're starting a crew. We need a name. Help.","He did a kickflip once. Then never again.","We skated here from Hayward Park station. Our legs are dead.",
+  "Do you have free stickers? We'll put them everywhere. Like everywhere.","Can you tell my mom skateboarding is a sport?","We filmed a part on my mom's phone. It's mostly feet.",
+  "Is that the guy from the video? No? Okay.","We want to go to the city to skate but we're not allowed past San Bruno.","Our skatepark has a puddle that never dries. We call it the Bay.",
+  "He fell off his board in front of his crush. We're here for moral support.","Can we get an It's-It? Wait, this isn't a store store.","When I grow up I'm gonna work here.");
+PHONE.push(
+ {who:'Caller',q:"Hi, do you guys sell fidget spinners? My son wants the light-up kind.",a:["Skateboards only","Try the mall"],r:["What about a fidget skateboard? Like a tiny one?","The mall. In this economy. Okay."]},
+ {who:'Caller',q:"Yo, you got fidget spinners? I need one for my meetings.",a:["Nope, sorry","Get a skateboard instead"],r:["Damn. Back to clicking my pen.","Can I spin it in a meeting though?"]},
+ {who:'Kid',q:"Do you have the fidget spinner that does tricks? Like a kickflip spinner?",a:["That's not a thing","Fingerboards are close"],r:["It should be a thing. Invent it.","Fingerboards! Yes! How much?"]},
+ {who:'Caller',q:"Are fidget spinners coming back? I want to be early this time.",a:["Absolutely not","Maybe in 2030"],r:["You don't know that. Nobody knows that.","I'll set a reminder."]},
+ {who:'Caller',q:"Do you guys sell those things that spin? Not wheels. The finger things.",a:["Fidget spinners? No","We have bearings"],r:["Aw man. I'll just spin a bearing.","Wait, that's actually genius."]},
+ {who:'Caller',q:"Can you guys get me a ride to the Giants game? I'll buy a sticker.",a:["We're a skate shop","Take Caltrain"],r:["Worth a shot.","Caltrain on game day. Respect."]},
+ {who:'Caller',q:"Is the fog bad in San Mateo right now? I'm deciding whether to skate.",a:["It's foggy","Clear skies"],r:["Karl wins again.","Sick. On my way."]},
+ {who:'Caller',q:"Do you guys know if Pier 7 is skateable today? Like, any security?",a:["Can't say","Go early"],r:["Fair. I'll take my chances.","Sunrise session it is."]},
+ {who:'Caller',q:"What's the best skatepark in the Peninsula? Settle a bet.",a:["Shoreview","Belmont"],r:["Called it. Pay up, Kevin.","Damn. Kevin wins."]},
+ {who:'Caller',q:"Is it true you guys have a skate area in the basement? Can I come skate it?",a:["Staff only","Ask the manager"],r:["Worth a try. I'm good at sneaking.","I'll bring donuts. Bribery."]},
+ {who:'Caller',q:"Are you guys open on Go Skate Day? I'm planning my whole year around it.",a:["Yes, all day","Doors at 11"],r:["Already marked my calendar.","I'll be there at 10:59."]},
+ {who:'Caller',q:"Do you guys ship to Sacramento? The shops up here don't have the good stuff.",a:["Yes, order online","Come visit"],r:["Sick, ordering tonight.","Road trip. Two hours. Worth it."]},
+ {who:'Caller',q:"My son learned to ollie today. I don't know what that means, but I'm proud. Do you sell trophies?",a:["Get him a new board","Congrats to him"],r:["Oh! That's a better idea.","He'll be so happy you said that."]},
+ {who:'Caller',q:"Do you guys sell wheels for a scooter? Don't hang up.",a:["We don't","Okay, click"],r:["Fair. I'd hang up too.","...rude, but valid."]},
+ {who:'Caller',q:"Hi, I'm calling from Daly City. How long does it take to get there by bus?",a:["About an hour","Take BART"],r:["An hour. For a board. Worth it.","Smart. Thanks."]});
+PARTY_TALK.push("This is the best night in San Mateo history. I said what I said.","Somebody tell Karl the Fog to come inside and party.","I took BART, Caltrain, AND a bus to get here. Worth every minute.",
+  "The part at the end with the stairs? My jaw is on the floor.","Who brought the It's-Its? You're my hero.","This is better than a Warriors championship parade.",
+  "My crew is gonna talk about this premiere for years.","I'm skating home on Caltrain tracks. Kidding. Mostly.","Somebody's trying a no-comply off the counter. Somebody film it.",
+  "DJ Cardiel's playlist is undefeated.","This pizza is fueling my entire next part.","I've never seen this shop this packed. Hella proud.",
+  "We should do a premiere every month.","The UPS guy is dancing. Everybody look.","Atlas forever. Say it with me.");
+LIFT_LINES.push("I'm just looking at the stickers. Very closely.","Nice shop. Very... secure. Ha.","Are those real cameras or the fake ones?","I'm waiting on my mom. She's... coming.","Don't worry, I'm a regular. Kinda.");
+CALLS.any.push("Yo, anyone up there? I've been reading the same mag for ten minutes.","Is the employee skating the basement again?","Hello? I can hear the music, I know you're here.",
+  "Should I just ring myself up?","Did everyone go on a burrito run?","I'm about to leave and go to the city.","I'll wait. I've waited for BART longer.",
+  "Hellooo? This deck isn't gonna buy itself.","Someone's in the basement, right? I hear wheels.","I'll just stare at the deck wall. It's art.");
+DLGX.weird=(DLGX.weird||[]).concat(["I got so high at Dolores Park I tried to ollie a dog. The dog won.","My trucks are so loose they're basically legally divorced.",
+  "I skated through the Mission at 3 AM and a guy sold me a burrito out of his car. Best fucking burrito ever.","Is it weird that I talk to my board? It's a better listener than my ex."]);
+DLGX.stories=(DLGX.stories||[]).concat(["Ate shit so hard at Pier 7 a tourist asked if I was part of a show.","Got kicked out of the Embarcadero so many times the security guard knows my birthday.",
+  "Hill bombed Twin Peaks and my shoes melted. Like, actually melted. Fucking smell was insane.","My homie broke his board over his knee after missing a trick 40 times. Then he cried. Then he landed it."]);
+DLGX.rude=(DLGX.rude||[]).concat(["Bro, I've been standing here so long I grew a fucking beard.","Help me before I lose my shit, man.","This line is slower than Caltrain on a Sunday. And that's fucked."]);
+DLGX.hang=(DLGX.hang||[]).concat(["Just waiting for my dumbass friend to finish his burrito.","I'm hungover as hell. Don't talk to me till noon."]);
+DLGX.browse=(DLGX.browse||[]).concat(["These prices are hella steep, but fuck it, I'm in love."]);
+PHONEX.push({who:'Caller',q:"Yo, do you sell fidget spinners? I'm too high to skate and I need something to do with my hands.",a:["No spinners","Try a fingerboard"],r:["Damn. I'll just spin my wheels then.","Holy shit. Tiny skateboard. Genius."]},
+ {who:'Caller',q:"Is it legal to skate on the Bay Bridge if I'm really fucking fast?",a:["Absolutely not","Call CHP and ask"],r:["Fine. Golden Gate then.","Hell no, they'll actually answer."]});
+PARTY_TALKX.push("I'm so fucking drunk I just high-fived the TV.","Best premiere ever. I spilled beer on three people and they all said thank you.","If the cops show up, we're a book club.");
 const BASE_DLG=JSON.parse(JSON.stringify(DLG)),BASE_CALLS=JSON.parse(JSON.stringify(CALLS)),BASE_SP={};
 for(const k in SPX)BASE_SP[k]=SP[k].idle.slice();
 function applyExplicit(){
