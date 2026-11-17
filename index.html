@@ -291,7 +291,7 @@ const BOARD_RELEASES=[
  {name:'Atlas 20 Year Deck',short:'Atlas 20 decks',box:'#f2c14e',hi:'#f8de95',dk:'#b8862a',shoe:'#f2c14e',acc:'#1d1f24'},
  {name:'Guest Artist Deck',short:'artist decks',box:'#e46aa6',hi:'#f7b6d2',dk:'#9e3d6b',shoe:'#7fd1a0',acc:'#e46aa6'},
  {name:'Gold Foil Shop Deck',short:'foil decks',box:'#c9a27a',hi:'#f4f1ea',dk:'#8a5f34',shoe:'#e7b93a',acc:'#26282e'},
- {name:'2nd Ave Map Deck',short:'map decks',box:'#3f7fd6',hi:'#8fb8f0',dk:'#1f4fa0',shoe:'#f1ede4',acc:'#3f7fd6'}];
+ {name:'City Map Deck',short:'map decks',box:'#3f7fd6',hi:'#8fb8f0',dk:'#1f4fa0',shoe:'#f1ede4',acc:'#3f7fd6'}];
 let REL=RELEASES[0];
 const relKey=sz=>(G&&G.release&&G.release.kind==='board'?'rboard-':'dunk-')+sz;
 function setRelease(i,kind){if(kind==='board'){REL=BOARD_RELEASES[i]||BOARD_RELEASES[0];['8.0','8.25','8.5'].forEach(sz=>{const it=ITEMS['rboard-'+sz];it.label=`${REL.name} ${sz}`;it.phrase=`the ${REL.name} in ${sz}`;});return;}
@@ -1047,7 +1047,7 @@ function finishIdle(c){
     c.hops--;c.stand=null;
     if(c.hops<=0&&Math.random()<.4){
       const buyers=G.customers.filter(o=>o!==c&&o.state!=='leave'&&o.kind!=='hang'&&o.kind!=='browse').length;
-      if(buyers<LV().cap(G.minute)){
+      if(buyers<LV().cap(G.minute)+D().cap){
         const self=Math.random()<.4,rq=genRequest(G.minute),sp2=pickStand(ITEMS[rq.req[0]].section,self);
         if(sp2){c.kind=self?'self':'buyer';c.req=rq.req;c.got=[];c.text=`Okay, you talked me into it. I'll take ${listText(rq.req.map(k=>ITEMS[k].phrase))}.`;
           c.stand=[sp2.c,sp2.r];c.talk=self?null:sp2.talk;c.state='in';c.patience=100;c.path=route(c.x,c.y,colX(sp2.c),rowY(sp2.r));return;}
@@ -1098,8 +1098,8 @@ function updateCustomer(c,dt){
   }
   if(c.moodT>0)c.moodT-=dt;
   const arrived=!c.path.length;
-  if(c.state==='wait'&&arrived){c.patience-=persOf(c).pat*(c.asked?1.15:1.6)*(messyFor(c)?1.4:1)*LV().pat*(G.map==='stock'?(LV().bp||1):1)*dt;}
-  else if(c.state==='queue'&&arrived){c.patience-=persOf(c).pat*.85*LV().pat*(G.map==='stock'?(LV().bp||1):1)*dt;c.dir=G.queue[0]===c?'up':'left';}
+  if(c.state==='wait'&&arrived){c.patience-=D().pat*persOf(c).pat*(c.asked?1.15:1.6)*(messyFor(c)?1.4:1)*LV().pat*(G.map==='stock'?(LV().bp||1):1)*dt;}
+  else if(c.state==='queue'&&arrived){c.patience-=D().pat*persOf(c).pat*.85*LV().pat*(G.map==='stock'?(LV().bp||1):1)*dt;c.dir=G.queue[0]===c?'up':'left';}
   if((c.state==='wait'||c.state==='queue')&&c.patience<=0){
     G.walkouts++;G.stars.push(1);sfx.bad();G.breakT=Math.max(G.breakT||0,6);if(c.release&&G.release)G.release.claim[c.size]++;toast(`${nameOf(c)} ${DLG.walk[c.pers]||DLG.walk.normal}`,'bad');leave(c,'x');
   }
@@ -1154,12 +1154,15 @@ function coDo(job,quiet){
   if(job==='chat'){const w=coWaiting()[0]||G.customers.find(o=>o.state==='queue');if(!w){if(!quiet)toast('Danny: "Nobody to talk to."');return home();}
     const spot=w.talk||w.stand||[Math.round((w.x-8)/T),Math.round((w.y-12)/T)];c.cid=w.id;c.state='toChat';c.path=coRouteFrom(c.x,c.y,colX(spot[0]),rowY(spot[1]));return;}
 }
+const DIFFS={easy:{name:'Easy',pat:.85,spawn:1.25,cap:0,dis:.7,lifts:2},normal:{name:'Normal',pat:1.15,spawn:1,cap:0,dis:1,lifts:3},hard:{name:'Hard',pat:1.5,spawn:.75,cap:1,dis:1.45,lifts:5}};
+let DIFF='normal';try{DIFF=localStorage.getItem('atlas-shift-diff')||'normal';if(!DIFFS[DIFF])DIFF='normal';}catch(_){}
+const D=()=>DIFFS[DIFF];
 const coSkill=()=>Math.max(0,Math.min(1,((G.level||3)-3)/5));
 function coWebOrder(){const W=web();let o=W.open.find(x=>!x.danny);if(!o&&W.inbox){W.inbox--;o=newWebOrder();W.open.push(o);}return o;}
 function coAuto(){
   const c=G.co,sk=coSkill();
   const nW=coWaiting().length;
-  if(nW<3&&Math.random()<.3-.15*sk){startDistract();return;}
+  if(nW<3&&Math.random()<(.3-.15*sk)*D().dis){startDistract();return;}
   if(G.phone&&G.phone.ring>2&&Math.random()<.35+.5*sk)return coDo('phone',true);
   const thief=G.customers.find(o=>o.state==='steal');if(thief&&Math.random()<.4+.5*sk)return coDo('catch',true);
   const w=coWaiting()[0];
@@ -1608,7 +1611,7 @@ function phoneAction(){const ph=G.phone||(G.phone={ring:0,t:40});
   if(!(ph.ring>0)){const L=['The cord is tangled in a way that feels intentional.','A sticky note on it says "DO NOT ANSWER IF IT IS GARY."','No missed calls. You check anyway.'];
     if(G.drink&&!G.release)L.push('Your iced coffee is sweating next to the phone. Still cold. Nice.','Someone drew a skull on your cup. Probably the manager.');
     return say([{who:'Shop phone',text:pick(L)}]);}
-  ph.ring=0;ph.t=55+Math.random()*55;sfx.talk();
+  ph.ring=0;ph.t=(55+Math.random()*55)/D().dis;sfx.talk();
   if(G.level>=2&&!G.closed&&(G.holds||[]).length<2&&Math.random()<.3){const k=randomItem(pick(Object.keys(SECTIONS))),nm=pick(NAMES),eta=pick(['an hour','like 45 minutes','after work','a bit']);
     return say([{who:'You',text:'Atlas Skateboarding, what\'s up?'},{who:nm,text:pick([`Hey, can you put ${ITEMS[k].phrase} on hold for me? Name's ${nm}. I'll be there in ${eta}.`,`Yo, could you hold ${ITEMS[k].phrase} under ${nm}? Coming by in ${eta}.`,`Hi! Can you set aside ${ITEMS[k].phrase} for me? It's ${nm}.`])}],
       ()=>openPicker({title:'Put it on hold?',options:[{label:'Sure, it\'s on hold',value:1},{label:'Sorry, no holds',value:0}],noCancel:true,onPick:v=>{
@@ -1644,7 +1647,7 @@ function interact(){
   if(ch==='V')return say([{who:'TV',text:'Skate videos on loop all day.'}]);
   if(ch==='U')return say([{who:'Fitting room',text:'Curtain fitting room. Customers can try on clothes back here.'}]);
   if(ch==='Z')return say([{who:'Gallery wall',text:'Atlas doubles as an art gallery. The work on this wall changes with each show. The fitting room and stock room are behind it.'}]);
-  if(ch==='N')return say([{who:'Window bench',text:'Where the regulars hang out. 2nd Avenue, downtown San Mateo. Open 11 to 7, every day.'}]);
+  if(ch==='N')return say([{who:'Window bench',text:'Where the regulars hang out. Open 11 to 7, every day.'}]);
 }
 function stationFor(sec){for(const k in STATIONS)if(STATIONS[k].includes(sec))return k;return 'b';}
 function stockPicker(sp,sel){
@@ -1947,16 +1950,16 @@ function update(dt){
     else G.spawnT-=dt;
     const struggling=G.customers.filter(c=>(c.state==='wait'||c.state==='queue')&&c.patience<35).length;
     if(G.spawnT<=0&&struggling>=2)G.spawnT=4;
-    const L=LV(),cap=L.cap(G.minute);
-    if(G.level>=2&&!G.release){G.kidT=(G.kidT==null?70+Math.random()*80:G.kidT)-dt;if(G.kidT<=0){G.kidT=150+Math.random()*120;if(!G.customers.some(o=>o.kid))spawnKids();}}
-    if(G.level>=6){G.liftT=(G.liftT==null?50+Math.random()*60:G.liftT)-dt;if(G.liftT<=0){G.liftT=110+Math.random()*90;if((G.lifts||0)<3&&!G.customers.some(o=>o.kind==='lifter')&&spawnLifter())G.lifts=(G.lifts||0)+1;}}
+    const L=LV(),cap=L.cap(G.minute)+D().cap;
+    if(G.level>=2&&!G.release){G.kidT=(G.kidT==null?70+Math.random()*80:G.kidT)-dt;if(G.kidT<=0){G.kidT=(150+Math.random()*120)/D().dis;if(!G.customers.some(o=>o.kid))spawnKids();}}
+    if(G.level>=6){G.liftT=(G.liftT==null?50+Math.random()*60:G.liftT)-dt;if(G.liftT<=0){G.liftT=(110+Math.random()*90)/D().dis;if((G.lifts||0)<D().lifts&&!G.customers.some(o=>o.kind==='lifter')&&spawnLifter())G.lifts=(G.lifts||0)+1;}}
     G.randT=(G.randT==null?12:G.randT)-dt;
     if(G.randT<=0){G.randT=20+Math.random()*20;
-      if(G.customers.filter(c=>(c.kind==='hang'||c.kind==='browse')&&c.state!=='leave').length<(L.randCap||1))spawnRandom();}
+      if(G.customers.filter(c=>(c.kind==='hang'||c.kind==='browse')&&c.state!=='leave').length<(L.randCap||1)+D().cap)spawnRandom();}
     if(G.spawnT<=0&&G.customers.filter(c=>c.state!=='leave'&&!c.release&&c.kind!=='hang'&&c.kind!=='browse'&&c.kind!=='lifter').length<cap){
       if(!G.firstDone){G.firstDone=true;spawnCustomer({req:['deck-8.25'],text:"Hey! I'm looking for an 8.25 deck. What do you have?"});}
       else if(!spawnCustomer()){G.spawnT=3;}
-      if(G.spawnT<=0){const f=G.minute/480;G.spawnT=(L.spawn[0]-(L.spawn[0]-L.spawn[1])*f)+Math.random()*5;}
+      if(G.spawnT<=0){const f=G.minute/480;G.spawnT=((L.spawn[0]-(L.spawn[0]-L.spawn[1])*f)+Math.random()*5)*D().spawn;}
     }
   }
   if(G.sales>=LV().target&&!G.goalHit){G.goalHit=true;const n=G.level;if(n<LEVELS.length&&readUnlocked()<n+1)writeUnlocked(n+1);
@@ -1968,7 +1971,7 @@ function update(dt){
   updateCo(dt);
   {const ph=G.phone||(G.phone={ring:0,t:40});
     if(ph.ring>0){ph.ring-=dt;ph.bt=(ph.bt||0)-dt;if(ph.bt<=0){ph.bt=1.6;for(let k=0;k<6;k++)setTimeout(()=>blip(k%2?1180:1480,.07,'sine',.022),k*75);}
-      if(ph.ring<=0){ph.ring=0;ph.t=50+Math.random()*50;toast('Missed the call. Eh, they\'ll call back.');}}
+      if(ph.ring<=0){ph.ring=0;ph.t=(50+Math.random()*50)/D().dis;toast('Missed the call. Eh, they\'ll call back.');}}
     else if(!G.closed){ph.t-=dt;if(ph.t<=0){ph.ring=10;ph.bt=0;toast('The phone is ringing. Left of the register.');}}}
   for(const h of (G.holds||[]).slice()){h.t-=dt;if(h.t>0||G.closed)continue;G.holds=G.holds.filter(x=>x!==h);
     const c=spawnCustomer({req:[h.item],text:`Hey, I called about a hold? Name's ${h.name}. ${ITEMS[h.item].label}.`});if(!c)continue;c.name=h.name;c.kind='buyer';
@@ -2210,7 +2213,7 @@ function drawStockTags(){const now=performance.now();drawFridge();
 /* ---------- bonus level: break run to the corner store ---------- */
 const BR={},GROUND=150,STREET=178,PX=52;
 function breakOffer(next){
-  overlay.innerHTML=`<h2>BREAK <span>TIME?</span></h2><p>Perfect 5.0 day. You earned a skate down 2nd Ave to the corner store before Day ${next}.</p>
+  overlay.innerHTML=`<h2>BREAK <span>TIME?</span></h2><p>Perfect 5.0 day. You earned a skate down the block to the corner store before Day ${next}.</p>
     <div class="levels"><button class="go" id="offerGo">GO ON A BREAK</button><button class="go alt" id="offerSkip">SKIP · START DAY ${next}</button></div>`;
   overlay.hidden=false;
   $('offerGo').addEventListener('click',()=>startBreak(next));$('offerSkip').addEventListener('click',()=>startShift(next));
@@ -2408,7 +2411,7 @@ function readUnlocked(){try{return Math.max(1,Math.min(LEVELS.length,+localStora
 function writeUnlocked(v){try{localStorage.setItem('atlas-shift-unlocked',String(v));}catch(_){}}
 function readDev(){try{return localStorage.getItem('atlas-shift-dev')==='1';}catch(_){return false;}}
 function writeDev(v){try{localStorage.setItem('atlas-shift-dev',v?'1':'0');}catch(_){}}
-const GAME_VERSION='v67';
+const GAME_VERSION='v68';
 function ageOK(){try{return localStorage.getItem('atlas-shift-age');}catch(_){return null;}}
 function renderAgeGate(){
   overlay.innerHTML=`<h2>18<span>+</span></h2><p>Strong language, drinking and smoking.</p>
@@ -2420,7 +2423,7 @@ function renderAgeGate(){
 function renderTitle(){
   if(!ageOK())return renderAgeGate();
   const dev=readDev(),un=dev?LEVELS.length:readUnlocked();
-  overlay.innerHTML=`<h2>ATLAS <span>SHIFT</span></h2><p>Work the floor at Atlas, 209 2nd Ave. Hit the sales goal, or make it to 7 PM with 3 stars, to unlock the next day.</p>
+  overlay.innerHTML=`<h2>ATLAS <span>SHIFT</span></h2><p>Work the floor at Atlas. Hit the sales goal, or make it to 7 PM with 3 stars, to unlock the next day.</p>
     <div class="levels">${LEVELS.map(L=>`<button class="lv" data-l="${L.n}"${L.n>un?' disabled':''}><b>DAY ${L.n}</b><span>${L.name}</span><small>${L.n>un?'Locked':`Goal $${L.target} · ${L.goal}`}</small></button>`).join('')}</div>
     ${dev?'<button class="go alt" id="devBreak">BONUS: BREAK RUN</button>':''}
     <button class="go alt" id="loadTitle">LOAD SAVE</button>
@@ -2595,7 +2598,7 @@ function renderParty(){
 function powOffer(after){
   sfx.cash();setTimeout(()=>blip(1568,.25,'square',.05),180);
   overlay.innerHTML=`<div class="pow"><div class="pow-in"><span>POW!</span></div></div><h2>BONUS <span>UNLOCKED</span></h2>
-    <p>Perfect 5.0 day. Skate down 2nd Ave to the corner store. You get one try.</p>
+    <p>Perfect 5.0 day. Skate down the block to the corner store. You get one try.</p>
     <div class="levels" style="flex-direction:row"><button class="go" id="powGo" style="flex:1;text-align:center">GO ON A BREAK</button><button class="go alt" id="powSkip" style="text-align:center">SKIP</button></div>`;
   overlay.hidden=false;
   $('powGo').addEventListener('click',()=>{afterBreak=after;startBreak();});
@@ -2631,7 +2634,7 @@ function mChord(t,notes,dur,peak){notes.forEach(m=>[[0,'sine',1],[5,'triangle',.
 const SONGS=[
   {name:'Basement Tapes',bpm:88,sw:.18,prog:[{bass:41,ch:[53,57,60,64]},{bass:40,ch:[52,55,59,62]},{bass:38,ch:[50,53,57,60,64]},{bass:45,ch:[55,60,64,67]}],
     kick:[0,10],kickB:[7],snare:[4,12],hat:8,stab:[0,11],stabLen:9,bass:{0:[0,5],6:[12,2],10:[0,3],14:[7,2]}},
-  {name:'Six-Four on 2nd Ave',bpm:93,sw:.12,prog:[{bass:36,ch:[51,55,58,62]},{bass:41,ch:[56,60,63,65]},{bass:34,ch:[50,53,56,60]},{bass:39,ch:[55,58,62,65]}],
+  {name:'Six-Four Cruise',bpm:93,sw:.12,prog:[{bass:36,ch:[51,55,58,62]},{bass:41,ch:[56,60,63,65]},{bass:34,ch:[50,53,56,60]},{bass:39,ch:[55,58,62,65]}],
     kick:[0,8,11],kickB:[14],snare:[4,12],hat:16,stab:[0],stabLen:12,bass:{0:[0,3],3:[0,1],8:[0,2],11:[7,2],14:[12,2]},lead:[72,75,77,79,82]},
   {name:'Shoreview After Dark',bpm:84,sw:.2,prog:[{bass:33,ch:[57,60,64]},{bass:33,ch:[57,60,65]},{bass:38,ch:[57,62,65]},{bass:40,ch:[56,59,62,64]}],
     kick:[0,3,10],kickB:[8],snare:[4,12],hat:8,openHat:14,stab:[0,3,7],stabLen:2,bass:{0:[0,3],3:[0,2],10:[0,4]}},
@@ -2750,10 +2753,11 @@ function openSettings(prev,selVal){
   const fromOverlay=prev==='title'||prev==='end',toMenu=()=>{ui=prev;if(fromOverlay)overlay.hidden=false;openMenu('settings');};
   if(fromOverlay)overlay.hidden=true;
   const opts=[{label:'Music',right:music.on?'ON':'OFF',value:'music'},{label:'Next song',right:SONGS[music.song||0].name,value:'song'},
-    {label:'Explicit dialogue',right:explicitOn?'ON':'OFF',value:'explicit'},{label:'Back',right:'',value:'back'}];
+    {label:'Explicit dialogue',right:explicitOn?'ON':'OFF',value:'explicit'},{label:'Difficulty',right:D().name,value:'diff'},{label:'Back',right:'',value:'back'}];
   pk=null;openPicker({title:'Settings',options:opts,sel:Math.max(0,opts.findIndex(o=>o.value===selVal)),onCancel:toMenu,onPick:v=>{
     if(v==='music')toggleMusic();
     else if(v==='song'){nextSong(false);if(!music.on){music.on=true;writeMusic(true);ensureAudio();}}
+    else if(v==='diff'){const ks=Object.keys(DIFFS);DIFF=ks[(ks.indexOf(DIFF)+1)%ks.length];try{localStorage.setItem('atlas-shift-diff',DIFF)}catch(_){}}
     else if(v==='explicit'){explicitOn=!explicitOn;try{localStorage.setItem('atlas-shift-explicit',explicitOn?'1':'0');}catch(_){}applyExplicit();}
     else return toMenu();
     ui=prev;openSettings(prev,v);}});
@@ -2827,7 +2831,7 @@ DLG.nice.push("Yo, this shop is my favorite stop between Caltrain and the park."
 DLG.rude.push("Bro, I could've taken BART to the city and back by now.","The fog moves faster than this line.","Yo, it's not that deep. Just grab the thing.",
   "I've been waiting longer than a Muni bus at midnight.","Hurry up, my parking meter on B Street is about to run out.","Can we speed this up? The session's starting at the park.",
   "I'm hella late already, man.","Is this a skate shop or a DMV?","My homie bought the same thing online in like two clicks. Just saying.",
-  "Bro, I'm double parked on 2nd Ave. Move.","I didn't take Caltrain for this level of service.","You guys need more people working. For real.",
+  "Bro, I'm double parked out front. Move.","I didn't take Caltrain for this level of service.","You guys need more people working. For real.",
   "Hello? I'm literally right here.","I have a filming session at 4. Let's go.","I didn't come here to watch you vibe to music.",
   "Can I get some service before the sun goes down?","I'm about to just go to the city instead.","This line is longer than the Bay Bridge traffic.",
   "Bruh. Today. Please.","My wheels have worn down faster than this.");
