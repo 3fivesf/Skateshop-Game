@@ -253,7 +253,7 @@ const STOCK_MAP=[
 "Q,,,,,,,,,,Q",
 "Qtt,,xxxxxxQ",
 "Qss,,,,,,,,Q",
-"Qls,,xxxxxxQ",
+"Qls,,yyyyyyQ",
 "Qls,,,,,,,,Q",
 "Qls,,www,bbQ",
 "Qls,,EEE,,,Q",
@@ -267,7 +267,10 @@ const tileAt=(c,r)=>(r<0||c<0||c>=COLS)?'W':(r>=ROWS?'P':MAP[r][c]);
 /* ---------- catalog ---------- */
 const ITEMS={};
 const add=(key,section,label,price,phrase)=>{ITEMS[key]={key,section,label,price,phrase};};
-['8.0','8.25','8.5'].forEach(s=>add('deck-'+s,'decks',`Deck ${s}"`,s==='8.5'?75:70,`an ${s} deck`));
+['8.0','8.25','8.5'].forEach(s=>{add('deck-'+s,'decks',`Atlas deck ${s}"`,s==='8.5'?75:70,`an Atlas deck in ${s}`);ITEMS['deck-'+s].size=s;ITEMS['deck-'+s].dbrand='atlas';});
+const DECK_BRANDS=[{id:'atlas',name:'Atlas shop',price:70,col:'#d6453d'},{id:'real',name:'Real',price:72,col:'#3f7fd6'},{id:'antihero',name:'Anti Hero',price:72,col:'#26282e'},
+  {id:'krooked',name:'Krooked',price:70,col:'#7ac74f'},{id:'baker',name:'Baker',price:70,col:'#f1ede4'},{id:'polar',name:'Polar',price:75,col:'#e46aa6'}];
+DECK_BRANDS.slice(1).forEach(b=>['8.0','8.25','8.5'].forEach(s=>{const k=`dk-${b.id}-${s}`;add(k,'decks',`${b.name} ${s}"`,b.price+(s==='8.5'?5:0),`a ${b.name} deck in ${s}`);Object.assign(ITEMS[k],{size:s,dbrand:b.id,day:2});}));
 const BRANDS=[
   {id:'vans',name:'Vans',price:75,day:1,col:'#c0392b',col2:'#f1ede4'},
   {id:'converse',name:'Converse',price:80,day:1,col:'#f1ede4',col2:'#26282e'},
@@ -304,24 +307,31 @@ add('crew-L','hoodies','Crewneck L',75,'a crewneck in large');
 ['M','L'].forEach(s=>add('btn-'+s,'rack',`Button-up ${s}`,80,`a button-up in ${SZ[s]}`));
 ['M','L'].forEach(s=>add('jkt-'+s,'rack',`Jacket ${s}`,120,`a jacket in ${SZ[s]}`));
 add('cap','hats','Cap',38,'a cap'); add('beanie','hats','Beanie',32,'a beanie');
-add('wh-52','case','Wheels 52mm',45,'52mm wheels'); add('wh-54','case','Wheels 54mm',45,'54mm wheels');
-add('tr-139','case','Trucks 139',60,'139 trucks'); add('tr-149','case','Trucks 149',60,'149 trucks');
-add('bear','case','Bearings',25,'bearings');
-add('grip','case','Griptape',12,'griptape'); add('mag','case','Thrasher mag',8,'the new Thrasher'); add('vinyl','case','Vinyl record',30,'a vinyl record'); ITEMS.mag.day=5; ITEMS.vinyl.day=5; add('socks','case','Socks',14,'socks'); add('stick','case','Sticker pack',5,'a sticker pack');
-['8.0','8.25','8.5'].forEach(d=>{const dk='deck-'+d;add('gd-'+d,'built',`Gripped ${d}"`,ITEMS[dk].price+ITEMS.grip.price,'');ITEMS['gd-'+d].parts=[dk,'grip'];
-  ['tr-139','tr-149'].forEach(tr=>['wh-52','wh-54'].forEach(wh=>{const k=`cmp-${d}-${tr.slice(3)}-${wh.slice(3)}`,parts=[dk,tr,wh,'bear','grip'];add(k,'built',`Complete ${d}"`,parts.reduce((a,q)=>a+ITEMS[q].price,0),'');ITEMS[k].parts=parts;}));});
-const SECTIONS={decks:'Deck wall',shoes:'Shoe wall',tees:'Tee table',hoodies:'Sweatshirt table',hats:'Hat shelf',rack:'Clothing rack',case:'Glass case'};
+add('wh-52','hard','Wheels 52mm',45,'52mm wheels'); add('wh-54','hard','Wheels 54mm',45,'54mm wheels');
+add('tr-139','hard','Trucks 139',60,'139 trucks'); add('tr-149','hard','Trucks 149',60,'149 trucks');
+add('bear','hard','Bearings',25,'bearings'); add('bolts','hard','Hardware',6,'a set of hardware bolts');
+add('grip','hard','Griptape',12,'griptape'); add('wax','case','Skate wax',6,'a bar of wax'); add('tool','case','Skate tool',15,'a skate tool'); add('mag','case','Thrasher mag',8,'the new Thrasher'); add('vinyl','case','Vinyl record',30,'a vinyl record'); ITEMS.mag.day=5; ITEMS.vinyl.day=5; add('socks','case','Socks',14,'socks'); add('stick','case','Sticker pack',5,'a sticker pack');
+Object.keys(ITEMS).filter(k=>ITEMS[k].section==='decks').forEach(dk=>{const it=ITEMS[dk],d=it.size,base=dk.startsWith('deck-')?d:dk.slice(3),bn=it.dbrand==='atlas'?'':DECK_BRANDS.find(b=>b.id===it.dbrand).name+' ';
+  const g='gd-'+base;add(g,'built',`Gripped ${bn}${d}"`,it.price+ITEMS.grip.price,'');Object.assign(ITEMS[g],{parts:[dk,'grip'],size:d,dbrand:it.dbrand,cmpBase:'cmp-'+base});it.gd=g;
+  ['tr-139','tr-149'].forEach(tr=>['wh-52','wh-54'].forEach(wh=>{const k=`cmp-${base}-${tr.slice(3)}-${wh.slice(3)}`,parts=[dk,tr,wh,'bear','grip'];add(k,'built',`Complete ${bn}${d}"`,parts.reduce((a,q)=>a+ITEMS[q].price,0),'');Object.assign(ITEMS[k],{parts,size:d,dbrand:it.dbrand});}));});
+const ART=[{k:'art-1',name:'Heart Tour poster',price:60,c:['#d6453d','#f4f1ea']},{k:'art-2',name:'35mm photo, Pier 7',price:85,c:['#26282e','#c4c9d1']},
+  {k:'art-3',name:'Push Project screenprint',price:120,c:['#f2c14e','#3f7fd6']},{k:'art-4',name:'Hand-painted deck',price:150,c:['#2bb3a3','#e46aa6']},
+  {k:'art-5',name:'Shop session photo',price:75,c:['#3a3d45','#f1ede4']},{k:'art-6',name:'Collage zine original',price:45,c:['#ee8a3a','#7ac74f']}];
+ART.forEach(a=>{add(a.k,'art',a.name,a.price,`the ${a.name} on the gallery wall`);ITEMS[a.k].day=6;});
+const SECTIONS={decks:'Deck wall',shoes:'Shoe wall',tees:'Tee table',hoodies:'Sweatshirt table',hats:'Hat shelf',rack:'Clothing rack',hard:'Hardgoods case',case:'Accessories'};
+const secName=s2=>s2==='art'?'gallery wall':SECTIONS[s2]||s2;
 const TILE_SECTION={D:'decks',S:'shoes',T:'tees',J:'hoodies',Y:'hats',H:'rack',C:'case'};
-const SHORT={decks:'Decks',shoes:'Shoes',tees:'Tees',hoodies:'Sweats',hats:'Hats',rack:'Rack',case:'Case'};
+const SHORT={decks:'Decks',shoes:'Shoes',tees:'Tees',hoodies:'Sweats',hats:'Hats',rack:'Rack',hard:'Hard',case:'Acc'};
 const TABLE_RECTS=[{ch:'J',x:80,y:80,w:48,h:24,row:5},{ch:'T',x:80,y:124,w:48,h:24,row:8}];
 const inTable=(px,py)=>TABLE_RECTS.find(t=>px>=t.x&&px<t.x+t.w&&py>=t.y&&py<t.y+t.h);
-const SECTION_TILES=[];FLOOR_MAP.forEach((row,r)=>[...row].forEach((ch,c)=>{if(TILE_SECTION[ch])SECTION_TILES.push([c,r,TILE_SECTION[ch]]);}));
-const STATIONS={b:['tees','hoodies','rack','hats'],x:['shoes'],k:['decks'],q:['case']};
+const tileSec=(ch,c)=>ch==='C'?(c>=5?'case':'hard'):TILE_SECTION[ch];
+const SECTION_TILES=[];FLOOR_MAP.forEach((row,r)=>[...row].forEach((ch,c)=>{const s2=tileSec(ch,c);if(s2)SECTION_TILES.push([c,r,s2]);}));
+const STATIONS={b:['tees','hard','hats'],y:['hoodies','rack'],x:['shoes'],k:['decks'],q:['case']};
 const STATION_NAMES={b:'Clothing bins',x:'Shoe shelves',k:'Deck cubbies',q:'Wheels & hardware'};
 const TAGS={'shoes-vans':'VANS','shoes-converse':'CONS','shoes-adidas':'ADIDAS','shoes-nb':'NB','shoes-asics':'ASICS','shoes-nikesb':'NIKE SB',shoes:'SHOES',
-  decks:'DECKS',case:'CASE','case-mags':'MAGS','case-vinyl':'VINYL',tees:'TEE',hoodies:'HOOD',rack:'RACK',hats:'HAT'};
+  decks:'DECKS',case:'ACC',hard:'HARD','case-mags':'MAGS','case-vinyl':'VINYL',tees:'TEE',hoodies:'HOOD',rack:'RACK',hats:'HAT'};
 const dSec=k=>k.split('-')[0];
-const SHOE_SLOTS=[[5,5,7],[5,8,10],[3,5,7],[3,8,10],[1,1,5],[1,6,10]];
+const SHOE_SLOTS=[[3,5,6],[3,7,8],[3,9,10],[1,1,3],[1,4,6],[1,7,10]];
 const brandOrder=lv=>BRANDS.filter(b=>brandOpen(b,lv));
 function shoeSlotBrand(c,r,lv){const i=SHOE_SLOTS.findIndex(([rr,a,b])=>rr===r&&c>=a&&c<=b);const ob=brandOrder(lv);return i>=0&&ob[i]?ob[i].id:null;}
 const dName=k=>k.startsWith('shoes-')?BRANDS.find(b=>b.id===k.slice(6)).name+' shoes':k==='case-mags'?'Thrasher mags (glass case)':k==='case-vinyl'?'vinyl records (glass case)':SECTIONS[k];
@@ -339,10 +349,11 @@ function openFridge(){if(!G.fridge)G.fridge=stockFridge();const F=G.fridge;
       f.snack?pick([`Crushed some ${f.n}.`,`${f.n}. Your fingers are a crime scene now.`]):pick([`Ice cold ${f.n}. Back to work.`,`${f.n} hits. Energy restored.`]));}});}
 function stockSpot(c,r){const ch=STOCK_MAP[r]&&STOCK_MAP[r][c];
   if(ch==='x'){const id=shoeSlotBrand(c,r,G.level);return id?{sec:'shoes',key:'shoes-'+id,brand:id}:null;}
-  if(ch==='b'){const k=({'9,7':'tees','10,7':'hoodies','9,9':'rack','10,9':'hats'})[c+','+r]||'tees';return {sec:k,key:k};}
+  if(ch==='b'){const k=({'9,7':'tees','10,7':'tees','9,9':'hard','10,9':'hats'})[c+','+r]||'tees';return {sec:k,key:k};}
+  if(ch==='y'){const k=c<=7?'hoodies':'rack';return {sec:k,key:k};}
   if(ch==='k')return {sec:'decks',key:'decks'};if(ch==='q')return {sec:'case',key:'case'};return null;}
 const STOCK_TAGS=[
-  ['tees',9,9,7],['hoodies',10,10,7],['rack',9,9,9],['hats',10,10,9],['decks',5,6,10],['case',7,8,10]];
+  ['tees',9,10,7],['hoodies',5,7,5],['rack',8,10,5],['hard',9,9,9],['hats',10,10,9],['decks',5,6,10],['case',7,8,10]];
 function newDBox(){const secs=Object.keys(SECTIONS),s2=pick(secs);if(s2!=='shoes')return s2;
   return 'shoes-'+pick(BRANDS.filter(b=>brandOpen(b,G.level))).id;}
 const SKATE=new Set(['s','v','l','r','t']);
@@ -350,24 +361,24 @@ const STOCK_MAX=6;
 const LEVELS=[
   {n:1,name:'Opening shift',target:250,goal:'Learn the floor. One item per customer.',maxItems:m=>1,complete:false,spawn:[26,18],cap:m=>m<60?1:2,pat:.45,clock:2.0,selfShare:.15,randCap:1,breakEvery:4,breakLen:10,stock:false},
   {n:2,name:'First restock',target:300,goal:'The stock room opens. Learn it at an easy pace.',maxItems:m=>1,complete:false,spawn:[30,22],cap:m=>2,pat:.4,bp:.25,clock:1.9,selfShare:.15,randCap:1,breakEvery:4,breakLen:12,stock:true,firstSpawn:25,
-    startStock:{decks:1,shoes:4,tees:4,hoodies:4,hats:3,rack:3,case:4}},
+    startStock:{decks:1,shoes:4,tees:4,hoodies:4,hats:3,rack:3,hard:4,case:4}},
   {n:3,name:'Saturday',target:450,goal:'More customers, some want two items.',maxItems:m=>m<240?1:2,complete:false,spawn:[22,15],cap:m=>m<160?2:3,pat:.55,bp:.45,clock:2.0,selfShare:.2,randCap:2,breakEvery:5,breakLen:10,stock:true,
-    startStock:{decks:3,shoes:3,tees:3,hoodies:3,hats:2,rack:2,case:3}},
+    startStock:{decks:3,shoes:3,tees:3,hoodies:3,hats:2,rack:2,hard:3,case:3}},
   {n:4,name:'Release day',target:900,goal:'Shoe release. A line out front, limited pairs.',maxItems:m=>m<240?1:2,complete:false,spawn:[32,22],cap:m=>2,pat:.5,bp:.45,clock:2.0,selfShare:.2,randCap:1,breakEvery:6,breakLen:8,stock:true,release:true,
-    startStock:{decks:4,shoes:4,tees:3,hoodies:3,hats:2,rack:2,case:3}},
+    startStock:{decks:4,shoes:4,tees:3,hoodies:3,hats:2,rack:2,hard:3,case:3}},
   {n:5,name:'Restock day',target:450,goal:'The release wiped the floor. Balance customers and restocks.',maxItems:m=>m<240?1:2,complete:false,spawn:[24,16],cap:m=>m<160?2:3,pat:.5,bp:.4,clock:2.0,selfShare:.25,randCap:2,breakEvery:5,breakLen:10,stock:true,
-    startStock:{decks:2,shoes:3,tees:3,hoodies:2,hats:2,rack:2,case:3}},
-  {n:6,name:'Build day',target:650,goal:'Customers build completes. Watch for shoplifters.',maxItems:m=>m<200?1:2,complete:true,spawn:[20,13],cap:m=>3,pat:.6,bp:.55,clock:2.1,selfShare:.3,randCap:2,breakEvery:6,breakLen:9,stock:true,
-    startStock:{decks:4,shoes:3,tees:3,hoodies:3,hats:2,rack:2,case:4}},
+    startStock:{decks:2,shoes:3,tees:3,hoodies:2,hats:2,rack:2,hard:3,case:3}},
+  {n:6,name:'Art show',target:650,goal:'Gallery night. The art on the wall is for sale. Watch for shoplifters.',maxItems:m=>m<200?1:2,complete:false,spawn:[20,13],cap:m=>3,pat:.6,bp:.55,clock:2.1,selfShare:.3,randCap:2,breakEvery:6,breakLen:9,stock:true,
+    startStock:{decks:4,shoes:3,tees:3,hoodies:3,hats:2,rack:2,hard:4,case:4}},
   {n:7,name:'Second drop',target:1000,goal:'Another shoe release. New brands arrive.',maxItems:m=>m<160?2:3,complete:true,spawn:[22,14],cap:m=>3,release:true,pat:.7,bp:.65,clock:2.2,selfShare:.3,randCap:2,breakEvery:6,breakLen:8,stock:true,
-    startStock:{decks:3,shoes:3,tees:3,hoodies:2,hats:2,rack:2,case:3}},
+    startStock:{decks:3,shoes:3,tees:3,hoodies:2,hats:2,rack:2,hard:3,case:3}},
   {n:8,name:'Holiday drop',target:1100,goal:'Holiday shoe release plus the rush.',maxItems:m=>m<90?2:3,complete:true,spawn:[18,11],cap:m=>3,release:true,pat:.8,bp:.7,clock:2.3,selfShare:.3,randCap:2,breakEvery:7,breakLen:8,stock:true,
-    startStock:{decks:3,shoes:3,tees:2,hoodies:2,hats:2,rack:2,case:3}},
+    startStock:{decks:3,shoes:3,tees:2,hoodies:2,hats:2,rack:2,hard:3,case:3}},
   {n:9,name:'Premiere night',target:700,goal:'Last shift, then the shop video premiere party.',maxItems:m=>m<200?1:2,complete:true,spawn:[20,13],cap:m=>3,pat:.6,bp:.55,clock:2.2,selfShare:.3,randCap:2,breakEvery:6,breakLen:9,stock:true,
-    startStock:{decks:4,shoes:4,tees:3,hoodies:3,hats:3,rack:3,case:4}}];
+    startStock:{decks:4,shoes:4,tees:3,hoodies:3,hats:3,rack:3,hard:4,case:4}}];
 const LV=()=>LEVELS[(G&&G.level||1)-1];
-const SPOTS={decks:[1,7],shoes:[10,8],tees:[6,7],hoodies:[6,4],hats:[10,4],rack:[10,5],case:[5,4]};
-const WEIGHTS=[['decks',4],['shoes',4],['tees',3],['hoodies',2],['hats',2],['case',3],['rack',1]];
+const SPOTS={decks:[1,7],shoes:[10,8],tees:[6,7],hoodies:[6,4],hats:[10,4],rack:[10,5],hard:[4,4],case:[5,4]};
+const WEIGHTS=[['decks',4],['shoes',4],['tees',3],['hoodies',2],['hats',2],['hard',2],['case',2],['rack',1]];
 const rowY=r=>r*T+12, colX=c=>c*T+8;
 const TRUNK=32, OFF=H+18, SIDE_Y=rowY(11)+2;
 const sideX=()=>Math.random()<.5?-12:W+12;
@@ -590,6 +601,13 @@ function stockTile(ch,x,y,c,r,rnd){
         else{R(rc,bx,by+4,7,1,'#2a2c32');}
       }
       break;}
+    case 'y':{concrete(x,y,c,r);const L2=c===5||c===8,R2=c===7||c===10;
+      for(let k=0;k<2;k++){const by=y+1+k*7,bx=x+(L2?1:0),bw=16-(L2?1:0)-(R2?1:0);
+        R(rc,bx,by+2,bw,5,'rgba(232,236,240,.92)');R(rc,bx,by+2,bw,1,'#ffffff');R(rc,bx,by+6,bw,1,'#c9d3d8');
+        for(let j=0;j<3;j++)R(rc,bx+1+j*5,by+3,4,3,pick(c<=7?SWEATS:['#3f4a5c','#8e1f2b','#c9c3b5','#2f6b4f','#6b4a2e'],rnd));
+        R(rc,bx-(L2?1:0),by,bw+(L2?1:0)+(R2?1:0),2,'#1d1f24');R(rc,bx-(L2?1:0),by,bw+(L2?1:0)+(R2?1:0),1,'#3a3d45');
+        if(L2)R(rc,x,by+1,2,2,'#26282e');if(R2)R(rc,x+14,by+1,2,2,'#26282e');if(L2||R2)R(rc,x+(L2?2:11),by+2,3,1,'#f4f1ea');}
+      break;}
     case 'k':
       R(rc,x,y,16,16,'#c08b55');R(rc,x,y,16,1,'#a8733f');R(rc,x+7,y,2,16,'#a8733f');R(rc,x,y+7,16,2,'#a8733f');
       [[1,1],[9,1],[1,9],[9,9]].forEach(([a,b])=>{R(rc,x+a,y+b,6,6,'#5e3d24');for(let s=0;s<3;s++)R(rc,x+a,y+b+1+s*2,6,1,pick(BOARD,rnd));});
@@ -755,6 +773,8 @@ function randomItem(sec){const lv=G.level||1;const keys=Object.keys(ITEMS).filte
 function listText(arr){return arr.length===1?arr[0]:arr.slice(0,-1).join(', ')+' and '+arr[arr.length-1];}
 function genRequest(m){
   const L=LV();
+  if(G.level>=6&&Math.random()<(G.level===6?.28:.08)){const taken=new Set([...(G.artGone||[]),...G.customers.flatMap(c=>c.req||[]),...G.hands]);const free=ART.filter(a=>!taken.has(a.k));
+    if(free.length){const a=pick(free);return {req:[a.k],text:pick([`Is ${a.name.toLowerCase()} on the gallery wall for sale? I want it.`,`I need the ${a.name.toLowerCase()} for my apartment. How much?`,`That ${a.name.toLowerCase()} is calling my name. Can I get it?`])};}}
   if(L.complete&&m>=240&&Math.random()<.18){
     const deck=pick(['deck-8.0','deck-8.25','deck-8.5']);
     const req=[deck,deck==='deck-8.5'?'tr-149':'tr-139',pick(['wh-52','wh-54']),'bear','grip'];
@@ -941,10 +961,10 @@ const k=randomItem(c.sec);if(G.stock)G.stock[c.sec]=Math.max(0,G.stock[c.sec]-1)
   c.stolen=k;c.state='steal';c.fast=1.35;c.stand=null;c.path=route(c.x,c.y,sideX(),SIDE_Y);
   const nm=c.lname||nameOf(c);if(!G.liftHelp){G.liftHelp=true;toast(`Hey! ${nm} just pocketed something. Catch them before they leave! (talk to them)`,'bad');}
   else toast(`Shoplifter! ${nm} is heading for the door.`,'bad');}
-function catchLifter(c){const k=c.stolen;G.caught=(G.caught||0)+1;if(G.stock)G.stock[c.sec]=Math.min(STOCK_MAX,G.stock[c.sec]+1);
+function catchLifter(c){const k=c.stolen;const p=G.player;p.dir=c.x<p.x?'left':'right';p.emote={type:'bat',t:.8};c.bonk=.6;blip(180,.12,'square',.07,-80);setTimeout(()=>blip(90,.15,'sawtooth',.06),60);G.caught=(G.caught||0)+1;if(G.stock)G.stock[c.sec]=Math.min(STOCK_MAX,G.stock[c.sec]+1);
   c.stolen=null;c.fast=1.2;leave(c,'x');G.stars.push(5);sfx.cash();
   say([{who:c.lname||nameOf(c),text:pick(["Aight, aight. My bad. I was gonna pay. Eventually.","Damn, you're fast for a shop guy. Here, take it.","This is entrapment. Also here's your "+ITEMS[k].label.toLowerCase()+"."])}]);
-  toast(`Caught him! Got the ${ITEMS[k].label} back.`,'good');}
+  toast(`BONK! Smacked them on the way out. Got the ${ITEMS[k].label} back.`,'good');}
 function spawnRandom(){
   const sp=Math.random()<.3&&!G.customers.some(o=>o.special&&o.state!=='leave'&&SP[o.special].kind!=='buyer')?pick(SPECIALS.filter(x=>x.kind!=='buyer')):null;
   const kind=sp?sp.kind:Math.random()<.5?'hang':'browse';
@@ -962,8 +982,8 @@ function spawnRandom(){
   return c;
 }
 function spawnCustomer(forced){
-  const look=newLook(),kind=!forced&&Math.random()<(LV().selfShare||0)?'self':'buyer';
-  const rq=forced||genRequest(G.minute);
+  const look=newLook();let kind=!forced&&Math.random()<(LV().selfShare||0)?'self':'buyer';
+  const rq=forced||genRequest(G.minute);if(ITEMS[rq.req[0]].section==='art')kind='buyer';
   const sec=ITEMS[rq.req[0]].section;
   const spot=pickStand(sec,kind==='self');
   if(!spot&&!forced)return null;
@@ -1136,7 +1156,7 @@ function lowestShelf(){let best=null;for(const s2 of Object.keys(SECTIONS)){cons
 const CO_CHAT=["You skate? Shoreview's been going off lately.","Good pick. Those are fire.","New decks come in Thursdays, just so you know.",
   "You see the new shop video? I'm in the background.","Honestly that fits you.","We have a jam next weekend, you should pull up."];
 function coBusy(){const nW=G.customers.filter(o=>o.state==='wait'&&!o.release).length,pend=todoList().filter(x=>x.pending&&!x.label.startsWith('Danny')).length;return nW>=3||pend>4;}
-function coWaiting(){return G.customers.filter(o=>o.state==='wait'&&!o.path.length&&!o.release).sort((a,b)=>a.patience-b.patience);}
+function coWaiting(){return G.customers.filter(o=>o.state==='wait'&&!o.path.length&&!o.release&&!o.req.some(k=>ITEMS[k].section==='art')).sort((a,b)=>a.patience-b.patience);}
 function coDo(job,quiet){
   const c=G.co,home=()=>{c.state='back';c.path=coRouteFrom(c.x,c.y,...CO_HOME());};
   if(job==='deliver'){if(!G.delivery||!G.delivery.boxes.length){if(!quiet)toast('Danny: "No delivery to put away."');return home();}
@@ -1203,10 +1223,10 @@ function updateCo(dt){
       if(cu){cu.patience=Math.min(100,cu.patience+25);cu.mood='<3';cu.moodT=1.4;}
       c.state='back';c.path=coRouteFrom(c.x,c.y,...CO_HOME());break;}
     case 'toDoor':if(coMove(dt)){c.map='stock';c.vis=true;c.state='down';c.t=2.5+Math.random()*1.5;c.sub='walk';[c.x,c.y]=[colX(6),rowY(9)];
-      const SP2={web:[[colX(4),rowY(9)],[colX(4),rowY(6)],[colX(6),rowY(6)]],shoes:[[colX(4),rowY(9)],[colX(4),rowY(6)],[colX(6),rowY(6)]],decks:[[colX(5),rowY(9)]],case:[[colX(7),rowY(9)]]};
+      const SP2={web:[[colX(4),rowY(9)],[colX(4),rowY(6)],[colX(6),rowY(6)]],shoes:[[colX(4),rowY(9)],[colX(4),rowY(4)],[colX(6),rowY(4)]],hoodies:[[colX(4),rowY(9)],[colX(4),rowY(6)],[colX(6),rowY(6)]],rack:[[colX(4),rowY(9)],[colX(4),rowY(6)],[colX(9),rowY(6)]],decks:[[colX(5),rowY(9)]],case:[[colX(7),rowY(9)]]};
       c.path=(SP2[c.sec]||[[colX(8),rowY(9)],[colX(8),rowY(8)]]).map(q=>q.slice());c.back=[...c.path.slice(0,-1).reverse(),[colX(6),rowY(9)]];}break;
     case 'down':
-      if(c.sub==='walk'){if(coMove(dt)){c.sub='dig';c.dir=c.sec==='shoes'?'up':c.sec==='decks'||c.sec==='case'||c.sec==='web'?'down':'right';if(c.sec==='web')c.t=5;}break;}
+      if(c.sub==='walk'){if(coMove(dt)){c.sub='dig';c.dir=c.sec==='shoes'||c.sec==='hoodies'||c.sec==='rack'?'up':c.sec==='decks'||c.sec==='case'||c.sec==='web'?'down':'right';if(c.sec==='web')c.t=5;}break;}
       if(c.sub==='dig'){c.t-=dt;c.moving=false;if(c.t<=0){c.sub='back';c.box=c.job!=='put';c.path=c.back.map(q=>q.slice());}break;}
       if(c.sub==='back'&&!coMove(dt))break;
       c.t=0;
@@ -1237,7 +1257,7 @@ function updateCo(dt){
       if(cu&&cu.state==='wait'){
         const need=stillNeeds(cu),empty=G.stock?need.find(k=>G.stock[ITEMS[k].section]<=0):null;
         if(empty)toast(`Danny: "The ${SECTIONS[ITEMS[empty].section]} is empty. Somebody has to restock it."`,'bad');
-        else{if(G.stock)need.forEach(k=>{const s3=ITEMS[k].section;G.stock[s3]=Math.max(0,G.stock[s3]-1);});cu.got=cu.req.slice();cu.asked=true;cu.mood='<3';cu.moodT=1.4;joinQueue(cu);
+        else{if(G.stock)need.forEach(k=>{const s3=ITEMS[k].section;if(G.stock[s3]!=null)G.stock[s3]=Math.max(0,G.stock[s3]-1);});cu.got=cu.req.slice();cu.asked=true;cu.mood='<3';cu.moodT=1.4;joinQueue(cu);
           G.coHelps=(G.coHelps||0)+1;toast(`Danny helped ${nameOf(cu)}. They're heading to the register.`,'good');}}
       if(c.keepHelp&&coBusy()){const w2=coWaiting().find(o=>o.id!==c.cid);if(w2){const sp=w2.talk||w2.stand;c.cid=w2.id;c.state='toHelp';c.path=coRouteFrom(c.x,c.y,colX(sp[0]),rowY(sp[1]));toast(`Danny: "Still busy. I'll grab ${nameOf(w2)} too."`);break;}}
       c.keepHelp=false;c.state='back';c.path=coRouteFrom(c.x,c.y,...CO_HOME());break;}
@@ -1378,20 +1398,23 @@ function openEmotes(){
   }});
 }
 function drawEmote(p){
-  const e=p.emote,x=Math.round(p.x),y=Math.round(p.y),t=performance.now()/1000;
-  if(e.type==='bob'){const nod=Math.floor(t*5.9)%2;drawPerson(ctx,x,y,STAFF,'down',0,false);
+  const e=p.emote,x=Math.round(p.x),y=Math.round(p.y),t=performance.now()/1000,ED=p.moving?p.dir:'down',EF=p.moving?p.frame:0,EM=!!p.moving;
+  if(e.type==='bob'){const nod=Math.floor(t*5.9)%2;drawPerson(ctx,x,y,STAFF,ED,EF,EM);
     if(nod){R(ctx,x-4,y-16,8,1,STAFF.hair);R(ctx,x-4,y-9,8,1,STAFF.skin);}
     const ny=y-24-Math.round((t*12)%8);R(ctx,x+6,ny,1,4,'#f2c14e');R(ctx,x+4,ny+3,2,2,'#f2c14e');R(ctx,x+7,ny,2,1,'#f2c14e');
     const ny2=y-22-Math.round((t*12+4)%8);R(ctx,x-7,ny2,1,4,'#e46aa6');R(ctx,x-9,ny2+3,2,2,'#e46aa6');R(ctx,x-6,ny2,2,1,'#e46aa6');return;}
+  if(e.type==='bat'){const k2=Math.min(1,(.8-e.t)/.35),dirx=p.dir==='left'?-1:1;drawPerson(ctx,x,y,STAFF,p.dir,0,false);
+    const ang=(-1.3+k2*2.2)*dirx,len=11,hx=x+3*dirx,hy=y-11;for(let i=3;i<len;i++){const bx=Math.round(hx+Math.cos(ang-Math.PI/2*dirx)*i*dirx),by=Math.round(hy+Math.sin(ang-Math.PI/2*dirx)*i);R(ctx,bx,by,i>7?2:1,i>7?2:1,'#c9a27a');}
+    if(k2>.8)drawBubble(x+10*dirx,y-6,'!');return;}
   if(e.type==='five'){drawPerson(ctx,x,y,STAFF,p.dir,0,false);const hx=p.dir==='right'?x+5:x-7;R(ctx,hx,y-20,2,5,STAFF.skin);return;}
-  if(e.type==='hi'){drawPerson(ctx,x,y,STAFF,'down',0,false);const up=Math.floor(t*6)%2;R(ctx,x+4,y-16+(up?1:3),2,4,STAFF.skin);
+  if(e.type==='hi'){drawPerson(ctx,x,y,STAFF,ED,EF,EM);const up=Math.floor(t*6)%2;R(ctx,x+4,y-16+(up?1:3),2,4,STAFF.skin);
     const bx=x-7,by=y-30;R(ctx,bx-1,by-1,16,10,'#1d1f24');R(ctx,bx,by,14,8,'#f4f1ea');R(ctx,bx+5,by+8,3,2,'#1d1f24');R(ctx,bx+6,by+8,1,1,'#f4f1ea');pText('HI!',bx+2,by+2,'#1d1f24');return;}
   if(e.type==='dance'){const sw=Math.round(Math.sin(t*7)*2);
-    ctx.save();ctx.beginPath();ctx.rect(x-10,y-9,20,12);ctx.clip();drawPerson(ctx,x,y,STAFF,'down',0,false);ctx.restore();
-    ctx.save();ctx.beginPath();ctx.rect(x-10,y-20,20,11);ctx.clip();drawPerson(ctx,x+sw,y,STAFF,'down',0,false);ctx.restore();
+    ctx.save();ctx.beginPath();ctx.rect(x-10,y-9,20,12);ctx.clip();drawPerson(ctx,x,y,STAFF,ED,EF,EM);ctx.restore();
+    ctx.save();ctx.beginPath();ctx.rect(x-10,y-20,20,11);ctx.clip();drawPerson(ctx,x+sw,y,STAFF,ED,EF,EM);ctx.restore();
     const ny=y-24-Math.round((t*12)%8);R(ctx,x+6,ny,1,4,'#f2c14e');R(ctx,x+4,ny+3,2,2,'#f2c14e');R(ctx,x+7,ny,2,1,'#f2c14e');
     const ny2=y-22-Math.round((t*12+4)%8);R(ctx,x-7,ny2,1,4,'#e46aa6');R(ctx,x-9,ny2+3,2,2,'#e46aa6');R(ctx,x-6,ny2,2,1,'#e46aa6');return;}
-  drawPerson(ctx,x,y,STAFF,'down',0,false);
+  drawPerson(ctx,x,y,STAFF,ED,EF,EM);
   const ox=x-6,oy=y-16;
   if(e.type==='vacuum'){const sw=Math.round(Math.sin(t*6)*3);R(ctx,ox+9,oy+7,1,8,'#6b6f78');R(ctx,ox+7+sw,oy+15,6,2,'#3a3d45');R(ctx,ox+12,oy+11,4,5,'#d6453d');R(ctx,ox+12,oy+11,4,1,'#f08a82');}
   if(e.type==='broom'){const sw=Math.round(Math.sin(t*6)*3);R(ctx,ox+9,oy+5,1,10,'#a8733f');R(ctx,ox+6+sw,oy+15,7,2,'#e2b973');
@@ -1404,7 +1427,7 @@ function drawEmote(p){
 function updatePlayer(dt){
   const p=G.player;let dx=hold.right-hold.left,dy=hold.down-hold.up,sm=1;
   if(stick.on){const m=Math.hypot(stick.x,stick.y);if(m>.2){dx=stick.x;dy=stick.y;sm=m>.85?1:Math.max(.45,m);}else{dx=0;dy=0;}}
-  if(p.emote){if(dx||dy||p.skate)p.emote=null;else{p.emote.t-=dt;p.moving=false;if(p.emote.t<=0)p.emote=null;return;}}
+  if(p.emote){if(p.skate)p.emote=null;else{p.emote.t-=dt;if(p.emote.t<=0)p.emote=null;}}
   const onSkate=(G.map==='stock'&&SKATE.has(tileUnder(p))&&p.stockBoard)||(p.walkSkate&&G.map==='floor'&&tileUnder(p)==='P');
   if(G.sk&&G.sk.comboT>0)G.sk.comboT-=dt;
   if(onSkate||p.air>0){
@@ -1462,22 +1485,34 @@ function target(){
   if(best)return {kind:'customer',c:best};
   if(G.map==='floor'){const own=[Math.floor(p.x/T),Math.floor((p.y-3)/T)];for(const d of [6,10,14,18]){const qx=cx+fx*d,qy=cy+fy*d;if(pileAt(qx,qy)&&!(Math.floor(qx/T)===own[0]&&Math.floor(qy/T)===own[1]))return {kind:'pile'};}}
   if(G.map==='floor')for(const d of [6,10,14]){const tb=inTable(cx+fx*d,cy+fy*d);if(tb)return {kind:'tile',ch:tb.ch,tc:Math.max(5,Math.min(7,Math.floor((cx+fx*d)/T))),tr:tb.row};}
+  {const L2=(G.leans||[]).find(l=>l.map===G.map&&Math.hypot(l.x-(cx+fx*10),l.y-6-(cy+fy*10))<12);if(L2)return {kind:'leaned',l:L2};}
   for(const d of [9,15]){
     const tc=Math.floor((cx+fx*d)/T),tr=Math.floor((cy+fy*d)/T),ch=tileAt(tc,tr);
     if(walkable(ch))continue;
-    return {kind:'tile',ch,tc,tr};
+    const tt={kind:'tile',ch,tc,tr};
+    if(G.hands.some(h=>ITEMS[h].parts)&&!hintFor(tt))return {kind:'lean',tc,tr};
+    return tt;
   }
   return null;
 }
+function leanBoard(t){const p=G.player,i=G.hands.findIndex(h=>ITEMS[h].parts);if(i<0)return;const k=G.hands.splice(i,1)[0];
+  let x=p.x,y=p.y;if(p.dir==='up')y=(t.tr+1)*T+6;else if(p.dir==='down')y=t.tr*T+2;else if(p.dir==='left')x=(t.tc+1)*T+3;else x=t.tc*T-3;
+  (G.leans=G.leans||[]).push({map:G.map,x:Math.round(x),y:Math.round(y),k,side:p.dir});sfx.grab();toast(`Leaned the ${ITEMS[k].label.toLowerCase()} against the wall.`);}
+function drawLeans(){for(const l of (G.leans||[])){if(l.map!==G.map)continue;const it=ITEMS[l.k],x=l.x,y=l.y;
+  const col=it.dbrand&&it.dbrand!=='atlas'?DECK_BRANDS.find(b=>b.id===it.dbrand).col:{'8.0':'#3f7fd6','8.25':'#d6453d','8.5':'#2bb3a3'}[it.size]||'#d6453d';
+  R(ctx,x-2,y-16,4,16,'#1d1f24');R(ctx,x-1,y-15,2,14,'#3a3d45');R(ctx,x-2,y-10,4,3,col);
+  if(l.k.startsWith('cmp-')){R(ctx,x-3,y-14,6,1,'#c4c9d1');R(ctx,x-3,y-3,6,1,'#c4c9d1');R(ctx,x-4,y-15,2,2,'#f4f1ea');R(ctx,x+2,y-15,2,2,'#f4f1ea');R(ctx,x-4,y-3,2,2,'#f4f1ea');R(ctx,x+2,y-3,2,2,'#f4f1ea');}}}
 function hintFor(t){
   if(!t)return '';
   if(t.kind==='customer')return 'A · Talk';
   if(t.kind==='mess')return 'A · Clean up';
+  if(t.kind==='lean')return 'A · Lean board on wall';
+  if(t.kind==='leaned')return 'A · Pick up board';
   if(t.kind==='coffee')return 'A · Coffee & doughnuts';
   if(t.kind==='co')return 'A · Talk to Danny';
   if(t.kind==='pile')return G.dbox?'A · Set box back on pile':`A · Delivery (${G.delivery.boxes.length})`;
   const ch=t.ch;
-  if(TILE_SECTION[ch])return 'A · '+SECTIONS[TILE_SECTION[ch]];
+  if(tileSec(ch,t.tc))return 'A · '+SECTIONS[tileSec(ch,t.tc)];
   if(ch==='R')return 'A · Register';
   if(ch==='B')return t.tc===1?'A · Music & web orders':'A · Grip bench';
   if(ch==='K')return 'A · Stock room';
@@ -1485,7 +1520,7 @@ function hintFor(t){
   if(ch==='g')return G.phone&&G.phone.ring>0?'A · Answer phone':'A · Phone';
   if(ch==='V')return 'A · TV';
   if(ch==='U')return 'A · Fitting room';
-  if(ch==='Z')return 'A · Gallery wall';
+  if(ch==='Z')return G.level>=6?'A · Art for sale':'A · Gallery wall';
   if(ch==='N')return 'A · Window';
   if(STATIONS[ch]&&G.map==='stock'){const sp=stockSpot(t.tc,t.tr);if(!sp&&ch==='x')return 'A · Empty shelf';return 'A · '+(sp?dName(sp.key)+(sp.sec==='shoes'?'':' stock'):STATION_NAMES[ch]);}
   const F={z:'Fridge',w:G.level>=3?'Web orders':'Packing table',E:'Stairs up',m:'Photo station',f:'Fan',u:'Trash can',p:'Support post'};
@@ -1572,13 +1607,18 @@ function deskAction(){const W=web();
   if(W.open.length)return packOrder();
   return say([{who:'Desk',text:'Card reader and receipt printer. Web orders get boxed here once you pull the items.'}]);
 }
+function artWall(){const gone=new Set([...(G.artGone||[]),...G.hands]);
+  const back=G.hands.filter(h=>h.startsWith('art-')).map(h=>({label:'Hang back '+ITEMS[h].label,right:'',value:'back:'+h}));
+  const opts=back.concat(ART.filter(a=>!gone.has(a.k)).map(a=>({label:a.name,right:'$'+a.price,value:a.k}))).concat([{label:'Never mind',right:'',value:null}]);
+  openPicker({title:'Art for sale',options:opts,onPick:v=>{if(!v)return;if(v.startsWith('back:')){G.hands.splice(G.hands.indexOf(v.slice(5)),1);return toast('Hung it back on the wall.');}
+    if(G.hands.length>=4)return toast('Your hands are full.','bad');G.hands.push(v);sfx.grab();toast(`Took the ${ITEMS[v].label} off the wall. Careful with it.`);}});}
 function gripBench(){
-  const gd=G.hands.find(k=>k.startsWith('gd-')),deck=G.hands.find(k=>k.startsWith('deck-'));
+  const gd=G.hands.find(k=>k.startsWith('gd-')),deck=G.hands.find(k=>ITEMS[k].section==='decks');
   const parts=['tr-','wh-','bear'].map(p=>G.hands.find(k=>k.startsWith(p)));
-  if(gd&&parts.every(Boolean)){const d=gd.slice(3),tr=parts[0],wh=parts[1],k=`cmp-${d}-${tr.slice(3)}-${wh.slice(3)}`;
+  if(gd&&parts.every(Boolean)){const d=ITEMS[gd].size,tr=parts[0],wh=parts[1],k=`${ITEMS[gd].cmpBase}-${tr.slice(3)}-${wh.slice(3)}`;
     [gd,...parts].forEach(q=>G.hands.splice(G.hands.indexOf(q),1));G.hands.push(k);blip(300,.15,'sawtooth',.03,400);setTimeout(()=>sfx.grab(),180);
     return toast(`Built the ${d}" complete. Hand it over for a tip.`,'good');}
-  if(deck&&G.hands.includes('grip')){const d=deck.slice(5);G.hands.splice(G.hands.indexOf(deck),1);G.hands.splice(G.hands.indexOf('grip'),1);G.hands.push('gd-'+d);
+  if(deck&&G.hands.includes('grip')){const d=ITEMS[deck].size;G.hands.splice(G.hands.indexOf(deck),1);G.hands.splice(G.hands.indexOf('grip'),1);G.hands.push(ITEMS[deck].gd);
     blip(300,.2,'sawtooth',.03,500);setTimeout(()=>sfx.grab(),220);
     return toast(`Gripped the ${d}". Add trucks, wheels and bearings here for a complete.`,'good');}
   if(gd)return toast('Bring trucks, wheels and bearings to build the complete.');
@@ -1626,6 +1666,8 @@ function interact(){
   const t=target();if(!t)return;
   if(t.kind==='customer')return talkTo(t.c);
   if(t.kind==='mess')return cleanMess(t.m);
+  if(t.kind==='lean')return leanBoard(t);
+  if(t.kind==='leaned'){if(G.hands.length>=4)return toast('Your hands are full.','bad');G.leans=G.leans.filter(x=>x!==t.l);G.hands.push(t.l.k);sfx.grab();return toast(`Picked up the ${ITEMS[t.l.k].label.toLowerCase()}.`);}
   if(t.kind==='coffee'){const p=G.player;p.emote={type:'drink',t:2.4};p.dir='down';sfx.grab();return toast(pick(['Free release-day coffee. Bless.','Grabbed a glazed doughnut. Sticky fingers, careful with the shoes.','Coffee is hot, line is long, vibes are good.','Took the last maple bar. Somebody in line saw you.']));}
   if(t.kind==='co')return talkCo();
   if(t.kind==='pile'){if(G.dbox){G.delivery.boxes.push(G.dbox);G.dbox=null;sfx.grab();return toast('Set the box back on the pile.');}
@@ -1634,7 +1676,7 @@ function interact(){
     return toast(`Box labeled ${TAGS[G.dbox]||'STOCK'}. Put it on the ${dName(G.dbox)} shelf downstairs.`);}
   const ch=t.ch;
   if(G.map==='stock')return interactStock(ch,t);
-  if(TILE_SECTION[ch])return openSection(TILE_SECTION[ch]);
+  if(tileSec(ch,t.tc))return openSection(tileSec(ch,t.tc));
   if(ch==='R')return register();
   if(ch==='B')return t.tc===1?musicStation():gripBench();
   if(ch==='K'){
@@ -1646,6 +1688,7 @@ function interact(){
   if(ch==='g')return phoneAction();
   if(ch==='V')return say([{who:'TV',text:'Skate videos on loop all day.'}]);
   if(ch==='U')return say([{who:'Fitting room',text:'Curtain fitting room. Customers can try on clothes back here.'}]);
+  if(ch==='Z'&&G.level>=6)return artWall();
   if(ch==='Z')return say([{who:'Gallery wall',text:'Atlas doubles as an art gallery. The work on this wall changes with each show. The fitting room and stock room are behind it.'}]);
   if(ch==='N')return say([{who:'Window bench',text:'Where the regulars hang out. Open 11 to 7, every day.'}]);
 }
@@ -1677,6 +1720,7 @@ function interactStock(ch,t){
     else{sfx.bad();toast(`That box goes back with the ${TAGS[G.box]} tag.`,'bad');}
     return;}
   if(sp)return stockPicker(sp);
+  if(ch==='y'&&!sp)return;
   if(ch==='x')return say([{who:'Empty shelf',text:'Nothing here yet. Room for whatever brand comes in next.'}]);
   if(ch==='z')return openFridge();
   if(ch==='E'){G.map='floor';setMap('floor');Object.assign(G.player,{x:colX(9),y:rowY(2),dir:'down',skate:false,air:0,vx:0,vy:0});sfx.door();return toast('Back on the sales floor.');}
@@ -1723,6 +1767,7 @@ function talkTo(c){
   if(c.carry)return say([{who,text:'Just waiting to pay.'}]);
   const need=stillNeeds(c);
   const give=[];
+  need.filter(k=>k.startsWith('art-')&&G.hands.includes(k)).forEach(k=>{(G.artGone=G.artGone||[]).push(k);});
   for(let i=G.hands.length-1;i>=0;i--){const it=ITEMS[G.hands[i]];if(!it||!it.parts)continue;const nd=need.slice();
     if(it.parts.every(q=>{const j=nd.indexOf(q);if(j<0)return false;nd.splice(j,1);return true;})){G.hands.splice(i,1);give.push(...it.parts);it.parts.forEach(q=>need.splice(need.indexOf(q),1));c.built=it.parts.length>2?'complete':'grip';}}
   for(const k of need){const i=G.hands.indexOf(k);if(i>=0){G.hands.splice(i,1);give.push(k);}}
@@ -1760,6 +1805,12 @@ function openSection(sec){
     if(G.stock&&G.stock[sec]<=0){sfx.bad();toast(`The ${SECTIONS[sec]} is empty. Grab a box from the stock room.`,'bad');return;}
     G.hands.push(k);if(G.stock)G.stock[sec]--;sfx.grab();toast('Grabbed '+ITEMS[k].label);
   };
+  if(sec==='decks'&&G.level>=2){
+    return openPicker({title:SECTIONS[sec]+(G.stock?` · ${G.stock[sec]} left`:'')+' · Brand',
+      options:backOpts.concat(DECK_BRANDS.map(b=>({label:b.name,right:'$'+b.price,value:'db:'+b.id}))).concat([{label:'Never mind',right:'',value:null}]),
+      onPick:id=>{if(!id)return;if(id.startsWith('back:'))return putBack(id);const b=id.slice(3),B=DECK_BRANDS.find(x=>x.id===b);
+        openPicker({title:`${B.name} · Size`,options:['8.0','8.25','8.5'].map(z=>{const k=b==='atlas'?'deck-'+z:`dk-${b}-${z}`;return {label:`${z}"`,right:'$'+ITEMS[k].price,value:k};}).concat([{label:'Never mind',right:'',value:null}]),onPick:grab});}});
+  }
   if(sec==='shoes'){
     return openPicker({title:SECTIONS[sec]+(G.stock?` · ${G.stock[sec]} left`:'')+' · Brand',
       options:backOpts.concat(brandOrder(G.level).map(b=>({label:b.name,right:'$'+b.price,value:b.id}))).concat([{label:'Never mind',right:'',value:null}]),
@@ -1849,7 +1900,7 @@ function handlePresses(){
       if(k==='A'){if(G.player.skate){if(coNearSkater()){G.player.vx=G.player.vy=0;talkCo();}else ollie();}else if(inSkateZone()&&!target())boardDown();else interact();}
       else if(k==='B'&&G.player.skate&&(G.player.air>0||G.player.grinding||G.map==='stock')){spinB();}
       else if(k==='B'){
-        if(G.hands.length){const h=G.hands[G.hands.length-1],it=ITEMS[h];sfx.bad();toast(it.section==='release'?`Put the ${REL.short} back on the desk by the register.`:`Put the ${it.label} back at the ${SECTIONS[it.parts?'decks':it.section]}.`,'bad');}
+        if(G.hands.length){const h=G.hands[G.hands.length-1],it=ITEMS[h];sfx.bad();toast(it.section==='release'?`Put the ${REL.short} back on the desk by the register.`:`Put the ${it.label} back at the ${secName(it.parts?'decks':it.section)}.`,'bad');}
         else if(G.box){sfx.bad();toast(`Take the box back to the ${TAGS[G.box]} shelf downstairs, or restock the ${SECTIONS[G.box]}.`,'bad');}
         else if(G.dbox){sfx.bad();toast(`That box goes on the ${TAGS[G.dbox]||'stock'} shelf downstairs.`,'bad');}
         else if(G.player.walkSkate&&G.player.air<=0){const pl=G.player;pl.walkSkate=false;pl.skate=false;pl.vx=pl.vy=0;toast('Board up.');}
@@ -2041,6 +2092,10 @@ function render(){
     R(ctx,x+2,y,4,7,'#c4c9d1');R(ctx,x+2,y,4,1,'#e6e8ec');R(ctx,x+3,y+5,1,1,'#26282e');R(ctx,x+7,y+4,7,3,'#f7b6d2');R(ctx,x+7,y+4,7,1,'#e46aa6');
     [[8,5,'#c9a27a'],[10,5,'#e46aa6'],[12,5,'#8a5f34']].forEach(([a,b2,cc])=>R(ctx,x+a,y+b2,2,2,cc));R(ctx,x+6,y+5,1,2,'#f4f1ea');
     const st=Math.floor(performance.now()/300)%3;R(ctx,x+3,y-2-st,1,1,'rgba(240,240,240,.7)');}
+  if(onFloor){const gone=new Set([...(G.artGone||[]),...G.hands]);ART.forEach((a,i)=>{const x=(8+Math.floor(i/2))*T+1+(i%2)*7,y=3*T+5;R(ctx,x,y,7,10,'#f4f1ea');
+      if(gone.has(a.k)){R(ctx,x+3,y+1,1,1,'#8b919c');if((G.artGone||[]).includes(a.k))R(ctx,x+5,y+8,2,2,'#d6453d');}
+      else{R(ctx,x,y+1,7,8,'#2a2d33');R(ctx,x+1,y+2,5,6,a.c[0]);R(ctx,x+2,y+4,3,2,a.c[1]);if(G.level>=6)R(ctx,x+5,y+8,2,1,'#f2c14e');}});}
+  drawLeans();
   if(!onFloor)drawStockTags();
   if(onFloor&&orderReady())glow(2*T,3*T,T,T,'#4fc47f');
   if(onFloor&&G.packages>0){const np=Math.min(6,G.packages),rows=Math.ceil(np/2);glow(0,2*T+10-(rows-1)*5-1,16,7+(rows-1)*5,'#f2c14e');}
@@ -2050,7 +2105,7 @@ function render(){
   const p=G.player,ents=(onFloor?G.customers:[]).map(c=>({y:c.y,f:()=>{
     const seat=c.chair&&c.state==='line'&&!c.path.length,cx2=Math.round(c.x),cy2=Math.round(c.y);
     if(seat){R(ctx,cx2-6,cy2-14,12,8,'#1f4fa0');R(ctx,cx2-6,cy2-14,12,1,'#3f7fd6');}
-    const sit=c.kid&&c.state==='idle';drawPerson(ctx,c.x,c.y+(sit?3:0),c.look,c.dir,c.frame,c.moving);
+    const sit=c.kid&&c.state==='idle';if(c.bonk>0){c.bonk-=1/60;const j=Math.round(Math.sin(c.bonk*40)*2);drawPerson(ctx,c.x+j,c.y-2,c.look,c.dir,0,false);for(let k=0;k<3;k++){const a=performance.now()/120+k*2.1;R(ctx,Math.round(c.x+Math.cos(a)*6),Math.round(c.y-22+Math.sin(a)*2),2,2,'#f2c14e');}}else drawPerson(ctx,c.x,c.y+(sit?3:0),c.look,c.dir,c.frame,c.moving);
     if(sit)R(ctx,Math.round(c.x)-6,Math.round(c.y)+1,12,2,'#3a3d45');
     if(c.look.cart){const kx=cx2+(c.dir==='left'?-17:7),ky=cy2;R(ctx,kx,ky-10,10,7,'#9aa1ad');for(let k=0;k<3;k++)R(ctx,kx+1+k*3,ky-9,1,5,'#6b6f78');
       R(ctx,kx+1,ky-12,4,3,'#c08b55');R(ctx,kx+5,ky-13,3,4,'#3f7fd6');R(ctx,kx+1,ky-3,2,2,'#26282e');R(ctx,kx+7,ky-3,2,2,'#26282e');}
@@ -2109,8 +2164,7 @@ const pWidth=str=>[...str].reduce((w,ch)=>w+(PF[ch]?PF[ch][0].length+1:0),0)-1;
 (function drawRug(){const c=floorRoom.getContext('2d'),x=17,y=6*T+7;
   R(c,x,y,14,18,'#1d1f24');R(c,x+5,y+3,2,12,'#c0392b');})();
 function sizeLabel(k){
-  if(k.startsWith('deck-'))return k.slice(5);
-  if(k.startsWith('gd-')||k.startsWith('cmp-'))return k.split('-')[1];
+  if(ITEMS[k]&&ITEMS[k].size&&!k.startsWith('rboard'))return ITEMS[k].size;
   if(k.startsWith('shoe-'))return k.split('-')[2];
   if(k.startsWith('wh-')||k.startsWith('tr-')||k.startsWith('dunk-')||k.startsWith('rboard-'))return k.split('-')[1];
   const m=k.match(/-(S|M|L|XL)$/);return m?m[1]:'';
@@ -2121,9 +2175,9 @@ function drawIcon(k,x,y){
   if(k==='__dbox'){R(ctx,x,y+2,10,7,'#8a5f34');R(ctx,x,y+2,10,1,'#b98c58');R(ctx,x+4,y+2,2,7,'#d9c27a');R(ctx,x+1,y+5,3,2,'#f4f1ea');return;}
   if(k==='__box'){R(ctx,x,y+2,10,7,'#c08b55');R(ctx,x,y+2,10,1,'#e2b973');R(ctx,x+4,y+2,2,7,'#a8733f');R(ctx,x,y+8,10,1,'#8a6a3a');return;}
   const col=hashCol(k);
-  if(k.startsWith('deck')){const c2={'deck-8.0':'#3f7fd6','deck-8.25':'#d6453d','deck-8.5':'#2bb3a3'}[k]||col;
+  if(k.startsWith('deck')||k.startsWith('dk-')){const c2=k.startsWith('dk-')?DECK_BRANDS.find(b=>b.id===ITEMS[k].dbrand).col:{'deck-8.0':'#3f7fd6','deck-8.25':'#d6453d','deck-8.5':'#2bb3a3'}[k]||col;
     R(ctx,x+4,y,3,1,O);R(ctx,x+3,y+1,5,8,O);R(ctx,x+4,y+9,3,1,O);R(ctx,x+4,y+1,3,8,c2);R(ctx,x+4,y+2,3,1,'#f4f1ea');R(ctx,x+4,y+7,3,1,'#f4f1ea');return;}
-  if(k.startsWith('gd-')||k.startsWith('cmp-')){const c2={'8.0':'#3f7fd6','8.25':'#d6453d','8.5':'#2bb3a3'}[k.split('-')[1]]||'#d6453d';
+  if(k.startsWith('gd-')||k.startsWith('cmp-')){const c2=ITEMS[k].dbrand&&ITEMS[k].dbrand!=='atlas'?DECK_BRANDS.find(b=>b.id===ITEMS[k].dbrand).col:{'8.0':'#3f7fd6','8.25':'#d6453d','8.5':'#2bb3a3'}[ITEMS[k].size]||'#d6453d';
     R(ctx,x+4,y,3,1,O);R(ctx,x+3,y+1,5,8,O);R(ctx,x+4,y+9,3,1,O);R(ctx,x+4,y+1,3,8,'#3a3d45');R(ctx,x+3,y+4,1,2,c2);R(ctx,x+7,y+4,1,2,c2);
     if(k.startsWith('cmp-'))[[1,1],[8,1],[1,7],[8,7]].forEach(([a,b])=>R(ctx,x+a,y+b,2,2,'#f4f1ea'));return;}
   if(k.startsWith('rboard')){R(ctx,x+4,y,3,1,O);R(ctx,x+3,y+1,5,8,O);R(ctx,x+4,y+9,3,1,O);R(ctx,x+4,y+1,3,8,REL.shoe);R(ctx,x+4,y+4,3,2,REL.acc);R(ctx,x+8,y,2,2,'#f2c14e');return;}
@@ -2135,7 +2189,11 @@ function drawIcon(k,x,y){
     if(k.startsWith('hood')){R(ctx,x+3,y,4,2,col);R(ctx,x+4,y+1,2,1,O);R(ctx,x+3,y+6,4,2,'rgba(0,0,0,.25)');}
     if(k.startsWith('btn')||k.startsWith('jkt')){R(ctx,x+5,y+2,1,8,'rgba(0,0,0,.35)');R(ctx,x+4,y+4,1,1,'#f4f1ea');R(ctx,x+4,y+7,1,1,'#f4f1ea');}
     return;}
+  if(k.startsWith('art-')){const a=ART.find(q=>q.k===k);R(ctx,x,y+1,10,8,'#5a3d26');R(ctx,x+1,y+2,8,6,a.c[0]);R(ctx,x+3,y+3,4,3,a.c[1]);return;}
   switch(k){
+    case 'bolts':for(let i=0;i<4;i++){R(ctx,x+1+i*2,y+2,1,6,'#8b919c');R(ctx,x+i*2,y+2,3,1,'#c4c9d1');}break;
+    case 'wax':R(ctx,x+1,y+3,8,5,'#f2c14e');R(ctx,x+1,y+3,8,1,'#f8de95');R(ctx,x+3,y+5,4,1,'#b8862a');break;
+    case 'tool':R(ctx,x+1,y+1,3,3,'#8b919c');R(ctx,x+3,y+3,4,4,'#c4c9d1');R(ctx,x+6,y+6,3,3,'#8b919c');R(ctx,x+1,y+7,3,2,'#c4c9d1');break;
     case 'cap':R(ctx,x+2,y+3,6,4,col);R(ctx,x+1,y+4,1,3,col);R(ctx,x+6,y+6,4,1,col);R(ctx,x+4,y+2,2,1,col);R(ctx,x+2,y+7,6,1,'rgba(0,0,0,.3)');break;
     case 'beanie':R(ctx,x+2,y+2,6,6,col);R(ctx,x+2,y+7,6,2,'#f4f1ea');R(ctx,x+4,y+1,2,1,col);break;
     case 'wh-52':case 'wh-54':R(ctx,x+3,y+1,4,8,'#f4f1ea');R(ctx,x+1,y+3,8,4,'#f4f1ea');R(ctx,x+2,y+2,6,6,'#f4f1ea');R(ctx,x+4,y+4,2,2,'#9aa1ad');break;
@@ -2401,8 +2459,8 @@ const INTROS={
   4:()=>[{who:'Manager',text:`Release day. The ${REL.name} drops at 11, one pair per customer.`},
     {who:'Manager',text:'The boxes are stacked on the desk next to the register. Grab their size and ring them up.'}],
   5:[{who:'Manager',text:'The release wiped out the floor. Keep the shelves stocked.'},{who:'Manager',text:'UPS is bringing the new Thrasher and some vinyl today. Both go in the glass case.'}],
-  6:[{who:'Manager',text:'Some customers want completes. 8.0 and 8.25 decks take 139 trucks, 8.5 takes 149s.'}],
-  7:()=>[{who:'Manager',text:`Surprise drop today: the ${REL.name}. Same deal, the boxes are on the desk.`},{who:'Manager',text:'Coffee and doughnuts are by the front window. Help yourself.'},{who:'Manager',text:'New Balance and Asics just came in too.'}],
+  6:[{who:'Manager',text:'Art show tonight. Everything on the gallery wall is for sale, grab it off the wall when someone wants a piece.'}],
+  7:()=>[{who:'Manager',text:`Surprise drop today: the ${REL.name}. Same deal, the boxes are on the desk.`},{who:'Manager',text:'Coffee and doughnuts are by the front window. Help yourself.'},{who:'Manager',text:'People want completes now too. Build them at the grip bench behind the counter.'},{who:'Manager',text:'New Balance and Asics just came in too.'}],
   8:()=>[{who:'Manager',text:`Holiday release! The ${REL.name} drops at 11. One pair per customer.`},{who:'Manager',text:'The boxes are on the desk by the register. Holiday rush on top of it. Good luck.'}],
   9:[{who:'Manager',text:'Last shift. Tonight we premiere the shop video. Close strong, then we party.'}]
 };
@@ -2411,7 +2469,7 @@ function readUnlocked(){try{return Math.max(1,Math.min(LEVELS.length,+localStora
 function writeUnlocked(v){try{localStorage.setItem('atlas-shift-unlocked',String(v));}catch(_){}}
 function readDev(){try{return localStorage.getItem('atlas-shift-dev')==='1';}catch(_){return false;}}
 function writeDev(v){try{localStorage.setItem('atlas-shift-dev',v?'1':'0');}catch(_){}}
-const GAME_VERSION='v68';
+const GAME_VERSION='v69';
 function ageOK(){try{return localStorage.getItem('atlas-shift-age');}catch(_){return null;}}
 function renderAgeGate(){
   overlay.innerHTML=`<h2>18<span>+</span></h2><p>Strong language, drinking and smoking.</p>
@@ -2694,6 +2752,7 @@ function restore(st){
   G.queue=(st.queue||[]).map(id=>G.customers.find(c=>c.id===id)).filter(Boolean);
   G.level=G.level||1;G.map=G.map||'floor';if(G.stock===undefined)G.stock=null;G.box=G.box||null;G.restocks=G.restocks||0;G.breakT=G.breakT||0;G.boards=G.boards||[];G.messes=G.messes||[];G.cleaned=G.cleaned||0;setMap(G.map);drawStockRoom(G.level);
   if(G.release)setRelease(G.release.rel||0,G.release.kind);web();if(!G.phone)G.phone={ring:0,t:40};
+  if(G.stock&&G.stock.hard==null)G.stock.hard=G.stock.case!=null?G.stock.case:3;
   G.hands=G.hands.filter(k=>ITEMS[k]);G.customers.forEach(c=>{c.req=c.req.map(k=>ITEMS[k]?k:'shoe-vans-9');c.got=c.got.filter(k=>ITEMS[k]);});
   G.over=false;G.player.moving=false;for(const k in hold)hold[k]=0;lastHud='';
 }
